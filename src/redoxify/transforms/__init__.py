@@ -5,11 +5,11 @@ from redoxify.transforms.RandomCropWithBoxes import (
 from redoxify.transforms.Resize import (
     Resize, ResizeConfig, ResizeInputOutputMap, BoxResizeSetting, ImageResizeSetting
 )
-from redoxify.transforms.Mosaic import (
+from redoxify.transforms.pytorch.Mosaic import (
     Mosaic, MosaicConfig, MosaicInputOutputMap, ImageMosaicSetting, BoxMosaicSetting, LabelMosaicSetting
 )
 
-from redoxify.transforms.Mixup import (
+from redoxify.transforms.pytorch.Mixup import (
     Mixup, MixupConfig, MixupInputOutputMap, ImageMixupSetting, BoxMixupSetting, LabelMixupSetting
 )
 
@@ -23,7 +23,7 @@ from redoxify.transforms.RandomSingleDirectionFlip import (
 from redoxify.transforms.RandomHSVAug import (
     RandomHSVAug, RandomHSVConfig, ImageRandomHSVSetting, RandomHSVInputOutputMap
 )
-from redoxify.transforms.DataBlockGroupingTransform import (
+from redoxify.transforms.DataBlockGrouping import (
     GroupingConfig, GroupingInputOutputMap, GroupingParams, GroupMemberSetting, DataBlockGroupingTransform
 )
 

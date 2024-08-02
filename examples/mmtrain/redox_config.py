@@ -18,11 +18,11 @@ from redoxify.transforms.Pad import (
     PadConfig, PadInputOutputMap, ImagePadSetting, BoxPadSetting
 )
 
-from redoxify.transforms.Mosaic import (
+from redoxify.transforms.pytorch.Mosaic import (
     MosaicConfig, MosaicInputOutputMap, ImageMosaicSetting, BoxMosaicSetting, LabelMosaicSetting
 )
 
-from redoxify.transforms.Mixup import (
+from redoxify.transforms.pytorch.Mixup import (
     MixupConfig, MixupInputOutputMap, ImageMixupSetting, BoxMixupSetting, LabelMixupSetting
 )
 from redoxify.transforms.RandomSingleDirectionFlip import (
@@ -92,15 +92,15 @@ pad_map = PadInputOutputMap(image_pad_settings=[img_pad_setting], box_pad_settin
 pad_cfg = PadConfig(target_height=640, target_width=640, fill_values=128.0)
 
 
-img_mosaic_setting = ImageMosaicSetting(image_key=DataKey("image"), output_key=DataKey("mosaic_image"))
-box_mosaic_setting = BoxMosaicSetting(box_key=DataKey("bboxes"), output_key=DataKey("mosaic_bboxes"))
-label_mosaic_setting = LabelMosaicSetting(label_key=DataKey("labels"), output_key=DataKey("mosaic_labels"))
+img_mosaic_setting = ImageMosaicSetting(image_key=DataKey("image"), output_key=DataKey("image"))
+box_mosaic_setting = BoxMosaicSetting(box_key=DataKey("bboxes"), output_key=DataKey("bboxes"))
+label_mosaic_setting = LabelMosaicSetting(label_key=DataKey("labels"), output_key=DataKey("labels"))
 mosaic_map = MosaicInputOutputMap(image_mosaic_settings=[img_mosaic_setting], box_mosaic_settings=[box_mosaic_setting], label_mosaic_settings=[label_mosaic_setting])
 mosaic_cfg = MosaicConfig(mosaic_height=640, mosaic_width=640, fill_values=128.0)
 
-img_mixup_setting = ImageMixupSetting(image_key=DataKey("image"), output_key=DataKey("mixup_image"))
-box_mixup_setting = BoxMixupSetting(box_key=DataKey("bboxes"), output_key=DataKey("mixup_bboxes"))
-label_mixup_setting = LabelMixupSetting(label_key=DataKey("labels"), output_key=DataKey("mixup_labels"))
+img_mixup_setting = ImageMixupSetting(image_key=DataKey("image"), output_key=DataKey("image"))
+box_mixup_setting = BoxMixupSetting(box_key=DataKey("bboxes"), output_key=DataKey("bboxes"))
+label_mixup_setting = LabelMixupSetting(label_key=DataKey("labels"), output_key=DataKey("labels"))
 mixup_map = MixupInputOutputMap(image_mixup_settings=[img_mixup_setting], box_mixup_settings=[box_mixup_setting], label_mixup_settings=[label_mixup_setting])
 mixup_cfg = MixupConfig(mixup_lower_ratio=0.25, mixup_upper_ratio=0.75, fill_values=128.0)
 
@@ -176,25 +176,28 @@ albu_train_transforms = [
 
 img_scale = (640, 640)
 mm_pipeline = [
-    # dict(type='mmyolo.Mosaic', 
-    #      img_scale=img_scale, 
-    #      center_ratio_range=(1.0,1.0),
-    #      use_cached=True,
-    #      pad_val=114.0),
-    # # dict(
-    # #     type='mmdet.RandomAffine',
-    # #     scaling_ratio_range=(0.1, 2),
-    # #     # img_scale is (width, height)
-    # #     border=(-img_scale[0] // 2, -img_scale[1] // 2)),
-    # dict(
-    #     type='mmyolo.YOLOXMixUp',
-    #     img_scale=img_scale,
-    #     use_cached=True,
-    #     ratio_range=(0.9, 1.1),
-    #     pad_val=114.0),
-    # dict(type='mmdet.YOLOXHSVRandomAug'),
-    dict(type='mmdet.RandomFlip', prob=0.5),
-    dict(type='mmdet.FilterAnnotations', min_gt_bbox_wh=(1, 1), keep_empty=False),
+    dict(type='Resize', 
+         scale=img_scale, 
+         keep_ratio=True),
+    dict(type='Pad', 
+         size=img_scale, 
+         pad_val=dict(img=(114,114,114,))
+         ),
+    dict(type='mmdet.YOLOXHSVRandomAug'),
+    dict(type='mmyolo.Mosaic', 
+         img_scale=img_scale, 
+         center_ratio_range=(1.0,1.0),
+         use_cached=True,
+         pad_val=114.0),
+    dict(
+        type='mmyolo.YOLOXMixUp',
+        img_scale=img_scale,
+        use_cached=True,
+        ratio_range=(0.9, 1.1),
+        pad_val=114.0),
+
+    # dict(type='mmdet.RandomFlip', prob=0.5),
+    # dict(type='mmdet.FilterAnnotations', min_gt_bbox_wh=(1, 1), keep_empty=False),
     # dict(
     #     type='mmdet.Albu',
     #     transforms=albu_train_transforms,
@@ -207,7 +210,7 @@ mm_pipeline = [
     #         'gt_bboxes': 'bboxes',
     #     },
     # ),
-    dict(type='mmdet.PackDetInputs')
+    # dict(type='mmdet.PackDetInputs')
 ]
 
 redox_dataset_config = dict(
@@ -226,36 +229,36 @@ redox_dataset_config = dict(
             config=crop_cfg,
             inout_map=crop_map
         ),
-        dict(
-            type='Resize',
-            config=resize_cfg,
-            inout_map=resize_map
-        ),
-        dict(
-            type='RandomSingleDirectionFlip',
-            config=flip_cfg,
-            inout_map=flip_map
-        ),
-        dict(
-            type='Pad',
-            config=pad_cfg,
-            inout_map=pad_map
-        ),
         # dict(
-        #     type='Mixup',
-        #     config=mixup_cfg,
-        #     inout_map=mixup_map
+        #     type='Resize',
+        #     config=resize_cfg,
+        #     inout_map=resize_map
         # ),
         # dict(
-        #     type='Mosaic',
-        #     config=mosaic_cfg,
-        #     inout_map=mosaic_cfg
+        #     type='Pad',
+        #     config=pad_cfg,
+        #     inout_map=pad_map
+        # ),
+        # dict(
+        #     type='RandomSingleDirectionFlip',
+        #     config=flip_cfg,
+        #     inout_map=flip_map
         # ),
         # dict(
         #     type='RandomHSVAug',
         #     config=hsv_cfg,
         #     inout_map=hsv_map
-        # )
+        # ),
+        # dict(
+        #     type='Mosaic',
+        #     config=mosaic_cfg,
+        #     inout_map=mosaic_map
+        # ),
+        # dict(
+        #     type='Mixup',
+        #     config=mixup_cfg,
+        #     inout_map=mixup_map
+        # ),
     ],
     output_map=output_map,
     normalized_bbox=True,

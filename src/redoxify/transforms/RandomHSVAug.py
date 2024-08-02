@@ -39,6 +39,7 @@ class RandomHSVConfig:
     hue_delta : Union[float, DALINode] = field(default=30.0)
     saturation_delta : Union[float, DALINode] = field(default=0.5)
     value_delta : Union[float, DALINode] = field(default=0.5)
+    probability : Union[float, DALINode] = field(default=0.5)
     
 @define(kw_only=True, eq=False)
 class RandomHSVParams(TransformParams):
@@ -57,9 +58,8 @@ class RandomHSVAug(BaseTransform):
         perform random crop on the images and boxes
         '''
         
-        output = self._do_transform(input_data.data_blocks)
-            
-        hsv_params = RandomHSVParams(aug=True)
+        output, aug = self._do_transform(input_data.data_blocks)
+        hsv_params = RandomHSVParams(aug=aug)
         final_output = TransformOutput(data_blocks=output, params=hsv_params)
         return final_output
         
@@ -72,6 +72,9 @@ class RandomHSVAug(BaseTransform):
             assert img_setting.image_key.main_key in input_data, f"image key {img_setting.image_key} not found in data"
             
         output_data = copy.copy(input_data)
+        if not fn.random.coin_flip(probability=self.m_hsv_config.probability):
+            output_data[output_key.main_key] = input_data[image_key.main_key]
+            return output_data, False
         hue = fn.random.uniform(range=[-self.m_hsv_config.hue_delta, self.m_hsv_config.hue_delta])
         saturation = fn.random.uniform(range=[1-self.m_hsv_config.saturation_delta, 1+self.m_hsv_config.saturation_delta])
         value = fn.random.uniform(range=[1-self.m_hsv_config.value_delta, 1+self.m_hsv_config.value_delta])
@@ -86,7 +89,4 @@ class RandomHSVAug(BaseTransform):
                 _image = fn.hsv(_image, hue=hue, saturation=saturation, value=value)
                 out_img_blk.add_data(sub_key, _image, out_image_spec)
             output_data[output_key.main_key] = out_img_blk
-                
-    
-        
-        return output_data
+        return output_data, True

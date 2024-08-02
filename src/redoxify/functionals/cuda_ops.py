@@ -7,9 +7,6 @@ from nvidia.dali.plugin.pytorch.fn import torch_python_function
 from nvidia.dali.pipeline import DataNode as DALINode
 
 def dali_mosaic_images(images: DALINode, boxes: DALINode, labels: DALINode):
-    '''
-    gather the data by indices
-    '''
     func = torch_python_function(
         images, boxes, labels,
         function=_dali_mosaic_images,
@@ -54,9 +51,6 @@ def _dali_mosaic_images(images: list[torch.Tensor], boxes: list[torch.Tensor], l
 
 
 def dali_mixup_images(images: DALINode, boxes: DALINode, labels: DALINode, ratioes: DALINode):
-    '''
-    gather the data by indices
-    '''
     func = torch_python_function(
         images, boxes, labels, ratioes,
         function=_dali_mixup_images,
@@ -67,13 +61,6 @@ def dali_mixup_images(images: DALINode, boxes: DALINode, labels: DALINode, ratio
     return func
 
 def _dali_mixup_images(images: list[torch.Tensor], boxes: list[torch.Tensor], labels: list[torch.Tensor], ratioes: list[torch.Tensor]):
-    """Mosaic augmentation.
-
-    Given 4 images, mosaic transform combines them into
-    one output image. The output image is composed of the parts from each sub-
-    image.
-    """
-    # images: list of N images, all of them have the same shape. assert the shape
     shapes = [img.shape for img in images]
     assert len(set(shapes)) == 1, "All images should have the same shape in mixup transform"
     num_images = len(images)
