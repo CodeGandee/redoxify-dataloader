@@ -47,7 +47,7 @@ class GroupingParams:
     pass
     
 
-class DataBlockGroupingTransform(BaseTransform):
+class DataBlockGrouping(BaseTransform):
     def __init__(self, grouping_config : GroupingConfig,
                  inout_map : GroupingInputOutputMap):
         self.m_config = grouping_config

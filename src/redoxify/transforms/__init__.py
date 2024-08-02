@@ -24,7 +24,7 @@ from redoxify.transforms.RandomHSVAug import (
     RandomHSVAug, RandomHSVConfig, ImageRandomHSVSetting, RandomHSVInputOutputMap
 )
 from redoxify.transforms.DataBlockGrouping import (
-    GroupingConfig, GroupingInputOutputMap, GroupingParams, GroupMemberSetting, DataBlockGroupingTransform
+    GroupingConfig, GroupingInputOutputMap, GroupingParams, GroupMemberSetting, DataBlockGrouping
 )
 
 __all__ = [
@@ -34,7 +34,7 @@ __all__ = [
     'Pad', 'PadConfig', 'PadInputOutputMap', 'ImagePadSetting', 'BoxPadSetting',
     'RandomSingleDirectionFlip', 'RandomSingleDirectionFlipConfig', 'RandomSingleDirectionFlipInputOutputMap', 'ImageRandomSingleDirectionFlipSetting', 'BoxRandomSingleDirectionFlipSetting',
     'RandomHSVAug', 'RandomHSVConfig', 'ImageRandomHSVSetting', 'RandomHSVInputOutputMap',
-    'GroupingConfig', 'GroupingInputOutputMap', 'GroupingParams', 'GroupMemberSetting', 'DataBlockGroupingTransform'
+    'GroupingConfig', 'GroupingInputOutputMap', 'GroupingParams', 'GroupMemberSetting', 'DataBlockGrouping'
 ]
 
 _TRANSFORM_CLASS_MAP = {
@@ -45,5 +45,5 @@ _TRANSFORM_CLASS_MAP = {
     'Pad': Pad,
     'RandomSingleDirectionFlip': RandomSingleDirectionFlip,
     'RandomHSVAug': RandomHSVAug,
-    'DataBlockGroupingTransform': DataBlockGroupingTransform
+    'DataBlockGrouping': DataBlockGrouping
 }
