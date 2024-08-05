@@ -5,8 +5,8 @@ import time
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 
-sys.path.append('/workspace/redoxify-dataloader/')
-sys.path.append('/workspace/redoxify-dataloader/src')
+sys.path.append('/workspace/github/redoxify-dataloader/')
+sys.path.append('/workspace/github/redoxify-dataloader/src')
 from examples.mmtrain.redox_config import redox_dataset_config
 from redoxify.datasets.RedoxBaseDataset import RedoxBaseDataset
 from redoxify.plugin.mmdetection.datasets.RedoxMMDetDataset import RedoxMMDetDataset

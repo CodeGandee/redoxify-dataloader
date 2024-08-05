@@ -13,6 +13,13 @@ from redoxify.transforms.pytorch.Mixup import (
     Mixup, MixupConfig, MixupInputOutputMap, ImageMixupSetting, BoxMixupSetting, LabelMixupSetting
 )
 
+from redoxify.transforms.pytorch.Blur import (
+    Blur, BlurConfig, BlurInputOutputMap, ImageBlurSetting
+)
+
+from redoxify.transforms.pytorch.MedianBlur import (
+    MedianBlur, MedianBlurConfig, MedianBlurInputOutputMap, ImageMedianBlurSetting
+)
 
 from redoxify.transforms.Pad import (
     Pad, PadConfig, PadInputOutputMap, ImagePadSetting, BoxPadSetting
@@ -42,6 +49,8 @@ _TRANSFORM_CLASS_MAP = {
     'Resize': Resize,
     'Mosaic': Mosaic,
     'Mixup': Mixup,
+    'Blur': Blur,
+    'MedianBlur': MedianBlur,
     'Pad': Pad,
     'RandomSingleDirectionFlip': RandomSingleDirectionFlip,
     'RandomHSVAug': RandomHSVAug,

@@ -121,6 +121,7 @@ class ImagesBlock(DataBlock):
             new_spec.encoding = C.ImageEncoding.raw
             new_spec.width = target_width
             new_spec.height = target_height
+            print(f"target_width: {target_width}, target_height: {target_height}")
             resized_image = fn.resize(decoded_image, 
                                        resize_x=target_width, 
                                        resize_y=target_height,
@@ -132,18 +133,28 @@ class ImagesBlock(DataBlock):
     def _get_pad_images(self,
                         target_width : Union[int, float, DALINode],
                         target_height : Union[int, float, DALINode],
-                        fill_values : Union[int, float, DALINode, List[int], List[float]] = 0.0) -> 'ImagesBlock':
+                        fill_values : Union[int, float, DALINode, List[int], List[float]] = 0.0,
+                        align_center: bool = False) -> 'ImagesBlock':
         out = ImagesBlock()
         for sub_key in self.m_content:
             decoded_image = self.m_decoded_images[sub_key]
             new_spec : ImageSpec = self.m_specs[sub_key].clone()
             new_spec.encoding = C.ImageEncoding.raw
+            source_width = self.m_specs[sub_key].width
+            source_height = self.m_specs[sub_key].height
             new_spec.width = target_width
             new_spec.height = target_height
-            padded_image = fn.crop(decoded_image, crop=[target_height, target_width], 
-                                   crop_pos_x=0.0, crop_pos_y=0.0, out_of_bounds_policy='pad', fill_values=fill_values)
-            out.add_data(sub_key, padded_image, new_spec)
-        return out
+            if align_center:
+                anch = fn.stack((target_width - source_width)/2, (target_height - source_height)/2)
+                anch = fn.cast(anch, dtype=DALIDataType.INT32)
+            else:
+                anch = fn.zeros(shape=(2,), dtype=DALIDataType.INT32)
+            images_pad = fn.slice(decoded_image, -anch, (target_width, target_height), out_of_bounds_policy="pad", fill_values=fill_values,
+                                normalized_shape=False, normalized_anchor=False)
+            # images_pad = fn.crop(decoded_image, crop=[target_height, target_width], 
+            #                        crop_pos_x=0.0, crop_pos_y=0.0, out_of_bounds_policy='pad', fill_values=fill_values)
+            out.add_data(sub_key, images_pad, new_spec)
+        return out, anch
         
     def _get_cropped_images_by_anchor(self, 
                                       anchor: Union[DALINode, Tuple[int,int], Tuple[float, float]], 

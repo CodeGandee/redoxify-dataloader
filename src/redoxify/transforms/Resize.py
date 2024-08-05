@@ -46,6 +46,8 @@ class ResizeConfig:
     target_width : Union[int, float, DALINode] = field(validator=av.instance_of((int, float, DALINode)))
     keep_aspect_ratio : bool = field(default=True)
     keep_aspect_ratio_mode : str = field(default='not_larger', validator=av.in_(['not_larger', 'not_smaller']))
+    letter_pad : bool = field(default=False)
+    letter_pad_value : Union[int, float, DALINode, List[int], List[float]] = field(validator=av.instance_of((int, float, DALINode, List)), default=114)
     
 @define(kw_only=True, eq=False)
 class ResizeParams(TransformParams):

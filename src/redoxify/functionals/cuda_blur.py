@@ -29,21 +29,17 @@ def _blur_image(image: torch.Tensor, blur_limit: torch.Tensor):
     Returns:
     - torch.Tensor: Blurred image.
     """
-    if image.ndim != 3 or image.size(2) != 3:
-        raise ValueError("Input image must be of shape (H, W, 3)")
     kernel_size = random.randint(3, blur_limit.item())
     kernel_size = kernel_size - 1 if kernel_size % 2 == 0 else kernel_size
     #create the blur kernel
-    kernel = torch.ones(kernel_size, kernel_size) / kernel_size**2
-    kernel = kernel.unsqueeze(0).unsqueeze(0)
-    
+    kernel = torch.ones(3, 1, kernel_size, kernel_size, device=image.device) / kernel_size**2
     #pad the image to ensure the output size matches the input size
     padding = kernel_size // 2
-    image = F.pad(image.permute(2, 0, 1).unsqueeze(0), (padding, padding, padding, padding), mode='reflect')
+    image = F.pad(image.permute(2, 0, 1).unsqueeze(0).float(), (padding, padding, padding, padding), mode='reflect')
     
     #apply the convolution
     blurred_image = F.conv2d(image, kernel, groups=3)
-    
+    blurred_image = blurred_image.clamp(0, 255).to(torch.uint8)
     #remove extra dimensions and permute back to (H, W, 3)
     blurred_image = blurred_image.squeeze(0).permute(1, 2, 0)
     
@@ -59,7 +55,7 @@ def dali_median_blur_image(image: DALINode, blur_limit: DALINode):
     )
     return func
 
-def _median_blur_image(image: torch.Tensor, blur_limit: int) -> torch.Tensor:
+def _median_blur_image(image: torch.Tensor, blur_limit: torch.Tensor) -> torch.Tensor:
     """
     Apply a median blur filter to an image using PyTorch.
     
@@ -70,10 +66,8 @@ def _median_blur_image(image: torch.Tensor, blur_limit: int) -> torch.Tensor:
     Returns:
     - torch.Tensor: Median blurred image.
     """
-    if image.ndim != 3 or image.size(2) != 3:
-        raise ValueError("Input image must be of shape (H, W, 3)")
     #randomly choose the kernel size while ensuring it is odd
-    kernel_size = random.randint(3, blur_limit)
+    kernel_size = random.randint(3, blur_limit.item())
     kernel_size = kernel_size - 1 if kernel_size % 2 == 0 else kernel_size
     
     padding = kernel_size // 2
@@ -85,3 +79,16 @@ def _median_blur_image(image: torch.Tensor, blur_limit: int) -> torch.Tensor:
     median_values = patches.median(dim=-1)[0]
     
     return median_values.permute(1, 2, 0)
+
+if __name__ == '__main__':
+    # Test the blur functions
+    import cv2
+    image = cv2.imread("tests/富士山.jpg")
+    image = torch.from_numpy(image).to(device='cuda')
+    blur_limit = torch.tensor(7)
+    blurred_image = _blur_image(image, blur_limit)
+    median_blurred_image = _median_blur_image(image, blur_limit)
+    blurred_image = blurred_image.cpu().numpy().astype(np.uint8)
+    median_blurred_image = median_blurred_image.cpu().numpy().astype(np.uint8)
+    cv2.imwrite("tests/富士山_blurred.jpg", blurred_image)
+    cv2.imwrite("tests/富士山_median_blurred.jpg", median_blurred_image)

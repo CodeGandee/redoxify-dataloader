@@ -25,6 +25,15 @@ from redoxify.transforms.pytorch.Mosaic import (
 from redoxify.transforms.pytorch.Mixup import (
     MixupConfig, MixupInputOutputMap, ImageMixupSetting, BoxMixupSetting, LabelMixupSetting
 )
+
+from redoxify.transforms.pytorch.Blur import (
+    BlurConfig, BlurInputOutputMap, ImageBlurSetting
+)
+
+from redoxify.transforms.pytorch.MedianBlur import (
+    MedianBlurConfig, MedianBlurInputOutputMap, ImageMedianBlurSetting
+)
+
 from redoxify.transforms.RandomSingleDirectionFlip import (
     RandomSingleDirectionFlipConfig, RandomSingleDirectionFlipInputOutputMap, ImageRandomSingleDirectionFlipSetting, BoxRandomSingleDirectionFlipSetting
 )
@@ -51,7 +60,7 @@ datablock_spec = {
 record_files = sorted(glob.glob("/workspace/redoxify_example/record/coco_train/*record*"))
 index_files = sorted(glob.glob("/workspace/redoxify_example/record/coco_train/*index*"))
 tf_files = [TFRecordFile(record_file=rec_file, index_file=idx_file) for rec_file, idx_file in zip(record_files, index_files)]
-reader_cfg = TFReaderConfig(tf_feature_spec=tf_feature_spec, datablock_spec=datablock_spec, random_shuffle=True)
+reader_cfg = TFReaderConfig(tf_feature_spec=tf_feature_spec, datablock_spec=datablock_spec, random_shuffle=False)
 
 # cropping config
 # there are two types of labels(labels and qualities). two crop specs are needed
@@ -118,7 +127,15 @@ flip_cfg = RandomSingleDirectionFlipConfig(probability=0.5, flip_direction='hori
 #   new value = value*(1+/-value_delta)
 img_hsv_setting = ImageRandomHSVSetting(image_key=DataKey("image"), output_key=DataKey("image"))
 hsv_map = RandomHSVInputOutputMap(image_hsv_settings=[img_hsv_setting])
-hsv_cfg = RandomHSVConfig(hue_delta=15, saturation_delta=0.2, value_delta=0.2)
+hsv_cfg = RandomHSVConfig(hue_delta=30, saturation_delta=0.3, value_delta=0.3, probability=0.5)
+
+img_blur_setting = ImageBlurSetting(image_key=DataKey("image"), output_key=DataKey("image"))
+blur_map = BlurInputOutputMap(image_blur_settings=[img_blur_setting])
+blur_cfg = BlurConfig(blur_limit=9, probability=0.5)
+
+img_median_blur_setting = ImageMedianBlurSetting(image_key=DataKey("image"), output_key=DataKey("image"))
+median_blur_map = MedianBlurInputOutputMap(image_blur_settings=[img_median_blur_setting])
+median_blur_cfg = MedianBlurConfig(blur_limit=9, probability=0.5)
 
 output_map = dict(
     images=SingleOutputSpec(input_key=DataKey("image"), pad_for_batch=True, split_batch_into_list=True),
@@ -229,26 +246,36 @@ redox_dataset_config = dict(
             config=crop_cfg,
             inout_map=crop_map
         ),
-        # dict(
-        #     type='Resize',
-        #     config=resize_cfg,
-        #     inout_map=resize_map
-        # ),
-        # dict(
-        #     type='Pad',
-        #     config=pad_cfg,
-        #     inout_map=pad_map
-        # ),
+        dict(
+            type='Resize',
+            config=resize_cfg,
+            inout_map=resize_map
+        ),
+        dict(
+            type='Pad',
+            config=pad_cfg,
+            inout_map=pad_map
+        ),
         # dict(
         #     type='RandomSingleDirectionFlip',
         #     config=flip_cfg,
         #     inout_map=flip_map
         # ),
-        # dict(
-        #     type='RandomHSVAug',
-        #     config=hsv_cfg,
-        #     inout_map=hsv_map
-        # ),
+        dict(
+            type='RandomHSVAug',
+            config=hsv_cfg,
+            inout_map=hsv_map
+        ),
+        dict(
+            type='Blur',
+            config=blur_cfg,
+            inout_map=blur_map
+        ),
+        dict(
+            type='MedianBlur',
+            config=median_blur_cfg,
+            inout_map=median_blur_map
+        ),
         # dict(
         #     type='Mosaic',
         #     config=mosaic_cfg,
@@ -266,7 +293,7 @@ redox_dataset_config = dict(
         image_key='images',
         bbox_key='bboxes',
         mm_key_mapping={"images": "img", "classes": "gt_bboxes_labels", "bboxes": "gt_bboxes"},
-        mm_pipeline=mm_pipeline)
+        mm_pipeline=None)
         # mm_pipeline=None)
 )
 

@@ -30,6 +30,15 @@ class DataBlock:
     def specs(self) -> Dict[str, DataSpec]:
         return self.m_specs
     
+    def clone(self) -> Self:
+        '''
+        Clone the DataBlock
+        '''
+        output = copy.copy(self)
+        output.m_content = copy.copy(self.m_content)
+        output.m_specs = copy.copy(self.m_specs)
+        return output
+    
     def gpu(self) -> Self:
         '''
         Create a new DataBlock with all the data on GPU

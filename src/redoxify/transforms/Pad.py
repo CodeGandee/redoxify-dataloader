@@ -45,6 +45,7 @@ class PadConfig:
     target_height : Union[int, float, DALINode] = field(validator=av.instance_of((int, float, DALINode)))
     target_width : Union[int, float, DALINode] = field(validator=av.instance_of((int, float, DALINode)))
     fill_values : Union[int, float, DALINode, List[int], List[float]] = field(validator=av.instance_of((int, float, DALINode, List)))
+    aligh_center : bool = field(default=True)
     
 @define(kw_only=True, eq=False)
 class PadParams(TransformParams):
@@ -63,7 +64,6 @@ class Pad(BaseTransform):
         '''
         perform random crop on the images and boxes
         '''
-        
         output, pad_width, pad_height = self._do_transform(input_data.data_blocks)
             
         pad_params = PadParams(
@@ -99,8 +99,8 @@ class Pad(BaseTransform):
             image_key = img_setting.image_key
             output_key = img_setting.output_key
             image_datablock = input_data[image_key.main_key]
-            output_data[output_key.main_key] = image_datablock._get_pad_images(target_height=target_height, target_width=target_width, 
-                                                                               fill_values=config.fill_values)
+            output_data[output_key.main_key], anchor = image_datablock._get_pad_images(target_height=target_height, target_width=target_width, 
+                                                                                fill_values=config.fill_values, align_center=config.aligh_center)
         
         for box_setting in self.m_inout_map.box_pad_settings:
             box_key = box_setting.box_key
@@ -111,10 +111,10 @@ class Pad(BaseTransform):
                 out_boxes_spec = box_datablock.get_spec(sub_key).clone()
                 out_boxes_spec.is_normalized = True
                 _boxes = box_datablock.get_boxes_normalized(sub_key, image_width=image_width, image_height=image_height)
-                _col1 = _boxes[:, 0] * image_width / target_width
-                _col2 = _boxes[:, 1] * image_height / target_height
-                _col3 = _boxes[:, 2] * image_width / target_width
-                _col4 = _boxes[:, 3] * image_height / target_height
+                _col1 = (_boxes[:, 0] * image_width + anchor[0]) / target_width
+                _col2 = (_boxes[:, 1] * image_height + anchor[1]) / target_height
+                _col3 = (_boxes[:, 2] * image_width + anchor[0]) / target_width
+                _col4 = (_boxes[:, 3] * image_height + anchor[1]) / target_height
                 new_boxes = fn.stack(_col1, _col2, _col3, _col4, axis=-1)
                 out_boxes_blk.add_data(sub_key, new_boxes, out_boxes_spec)
             output_data[output_key.main_key] = out_boxes_blk
