@@ -7,9 +7,9 @@ import numpy as np
 from nvidia.dali.plugin.pytorch.fn import torch_python_function
 from nvidia.dali.pipeline import DataNode as DALINode
 
-def dali_blur_image(image: DALINode, blur_limit: DALINode):
+def dali_blur_image(image: DALINode, blur_limit: DALINode, probability: DALINode):
     func = torch_python_function(
-        image, blur_limit,
+        image, blur_limit, probability,
         function=_blur_image,
         batch_processing=False,
         num_outputs=1,
@@ -17,7 +17,7 @@ def dali_blur_image(image: DALINode, blur_limit: DALINode):
     )
     return func
 
-def _blur_image(image: torch.Tensor, blur_limit: torch.Tensor):
+def _blur_image(image: torch.Tensor, blur_limit: torch.Tensor, probability: torch.Tensor) -> torch.Tensor:
     """
     Apply a blur filter to an image using PyTorch. The blur kernel size is randomly
     chosen between 3 and `blur_limit`.
@@ -29,6 +29,8 @@ def _blur_image(image: torch.Tensor, blur_limit: torch.Tensor):
     Returns:
     - torch.Tensor: Blurred image.
     """
+    if torch.rand(1, device=probability.device) > probability:
+        return image
     kernel_size = random.randint(3, blur_limit.item())
     kernel_size = kernel_size - 1 if kernel_size % 2 == 0 else kernel_size
     #create the blur kernel
@@ -45,9 +47,9 @@ def _blur_image(image: torch.Tensor, blur_limit: torch.Tensor):
     
     return blurred_image
 
-def dali_median_blur_image(image: DALINode, blur_limit: DALINode):
+def dali_median_blur_image(image: DALINode, blur_limit: DALINode, probability: DALINode):
     func = torch_python_function(
-        image, blur_limit,
+        image, blur_limit, probability,
         function=_median_blur_image,
         batch_processing=False,
         num_outputs=1,
@@ -55,7 +57,7 @@ def dali_median_blur_image(image: DALINode, blur_limit: DALINode):
     )
     return func
 
-def _median_blur_image(image: torch.Tensor, blur_limit: torch.Tensor) -> torch.Tensor:
+def _median_blur_image(image: torch.Tensor, blur_limit: torch.Tensor, probability: torch.Tensor) -> torch.Tensor:
     """
     Apply a median blur filter to an image using PyTorch.
     
@@ -66,6 +68,8 @@ def _median_blur_image(image: torch.Tensor, blur_limit: torch.Tensor) -> torch.T
     Returns:
     - torch.Tensor: Median blurred image.
     """
+    if torch.rand(1, device=probability.device) > probability:
+        return image
     #randomly choose the kernel size while ensuring it is odd
     kernel_size = random.randint(3, blur_limit.item())
     kernel_size = kernel_size - 1 if kernel_size % 2 == 0 else kernel_size
@@ -86,7 +90,7 @@ if __name__ == '__main__':
     image = cv2.imread("tests/富士山.jpg")
     image = torch.from_numpy(image).to(device='cuda')
     blur_limit = torch.tensor(7)
-    blurred_image = _blur_image(image, blur_limit)
+    blurred_image = _blur_image(image, blur_limit, torch.tensor(0.5))
     median_blurred_image = _median_blur_image(image, blur_limit)
     blurred_image = blurred_image.cpu().numpy().astype(np.uint8)
     median_blurred_image = median_blurred_image.cpu().numpy().astype(np.uint8)

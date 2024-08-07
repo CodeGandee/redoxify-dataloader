@@ -1,11 +1,13 @@
 import os
 import copy
 from typing import Dict, Union
+
+from torch.utils.data import DataLoader
 from mmengine.registry import RUNNERS
 from mmengine.runner import Runner
 from mmengine.config import Config, ConfigDict
-
-from redoxify.plugin.mmdetection.dataloader_builder import build_dataloader_from_cfg
+from redoxify.plugin.mmdetection.datasets.RedoxMMDetDataset import RedoxMMDetDataset
+from redoxify.plugin.mmdetection.datasets.utils import pseudo_collate
 
 ConfigType = Union[Dict, Config, ConfigDict]
 
@@ -17,11 +19,12 @@ class RedoxMMRunner(Runner):
 
     @classmethod
     def from_cfg(cls, cfg: ConfigType) -> 'RedoxMMRunner':
-        redox_loader_cfg = cfg.get('redox_loader_config')
+        redox_dataset_config = cfg.get('redox_dataset_config')
         local_rank = int(os.environ.get('LOCAL_RANK', 0))
         world_size = int(os.environ.get('WORLD_SIZE', 1))
-        train_loader = build_dataloader_from_cfg(redox_loader_cfg, world_size=world_size, device_id=local_rank)
-        cfg = {k: v for k, v in cfg.items() if k not in ['redox_loader_config', 'RedoxMMRunner', 'sys']}
+        dataset = RedoxMMDetDataset.from_redox_cfg(redox_dataset_config, num_gpus=world_size, device_id=local_rank)
+        train_loader = DataLoader(dataset, collate_fn=pseudo_collate)
+        cfg = {k: v for k, v in cfg.items() if k not in ['redox_dataset_config', 'RedoxMMRunner', 'sys']}
         cfg = copy.deepcopy(cfg)
         runner = cls(
             model=cfg['model'],

@@ -137,6 +137,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+work_dirs/
 temp/
 test/
 *.jpg

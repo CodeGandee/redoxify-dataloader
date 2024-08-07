@@ -9,10 +9,13 @@ from mmengine.runner import Runner
 
 from mmdet.utils import setup_cache_size_limit_of_dynamo
 
+# import sys
+# sys.path.append('/workspace/github/redoxify-dataloader/src')
+# from redoxify.plugin.mmdetection.RedoxMMRunner import RedoxMMRunner
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
-    parser.add_argument('--config', help='train config file path', default='mmtrain/yolox_s.py')
+    parser.add_argument('--config', help='train config file path', default='examples/mmtrain/yolox_s.py')
     # parser.add_argument('--config', help='train config file path', default='mmtrain/ddq_detr.py')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(

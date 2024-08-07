@@ -75,10 +75,10 @@ class MedianBlur(BaseTransform):
             out_img_blk = ImagesBlock()
             for sub_key in image_datablock.get_keys():
                 out_image_spec = image_datablock.get_spec(sub_key).clone()
+                _image = image_datablock.get_decoded_tensor(sub_key)
                 #FIXME: solve the issue with the blur
                 # if fn.random.coin_flip(probability=self.m_blur_config.probability):
-                _image = image_datablock.get_decoded_tensor(sub_key)
-                _image = dali_median_blur_image(_image, self.m_blur_config.blur_limit)
+                _image = dali_median_blur_image(_image, self.m_blur_config.blur_limit, self.m_blur_config.probability)
                 out_img_blk.add_data(sub_key, _image, out_image_spec)
             output_data[output_key.main_key] = out_img_blk
         return output_data, True

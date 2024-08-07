@@ -256,11 +256,11 @@ redox_dataset_config = dict(
             config=pad_cfg,
             inout_map=pad_map
         ),
-        # dict(
-        #     type='RandomSingleDirectionFlip',
-        #     config=flip_cfg,
-        #     inout_map=flip_map
-        # ),
+        dict(
+            type='RandomSingleDirectionFlip',
+            config=flip_cfg,
+            inout_map=flip_map
+        ),
         dict(
             type='RandomHSVAug',
             config=hsv_cfg,
@@ -276,16 +276,16 @@ redox_dataset_config = dict(
             config=median_blur_cfg,
             inout_map=median_blur_map
         ),
-        # dict(
-        #     type='Mosaic',
-        #     config=mosaic_cfg,
-        #     inout_map=mosaic_map
-        # ),
-        # dict(
-        #     type='Mixup',
-        #     config=mixup_cfg,
-        #     inout_map=mixup_map
-        # ),
+        dict(
+            type='Mosaic',
+            config=mosaic_cfg,
+            inout_map=mosaic_map
+        ),
+        dict(
+            type='Mixup',
+            config=mixup_cfg,
+            inout_map=mixup_map
+        ),
     ],
     output_map=output_map,
     normalized_bbox=True,

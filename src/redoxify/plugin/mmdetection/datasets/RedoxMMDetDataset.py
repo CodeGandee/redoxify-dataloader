@@ -195,3 +195,6 @@ class RedoxMMDetDataset(RedoxBaseDataset):
             result = self.apply_mm_transforms(result)
             data_batch.append(self.packer.transform(result))
         return data_batch
+    
+    def update_skip_type_keys(self, skip_type_keys):
+        pass
