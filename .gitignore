@@ -143,3 +143,4 @@ work_dirs/
 temp/
 test/
 *.jpg
+*.png
