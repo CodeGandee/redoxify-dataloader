@@ -75,23 +75,24 @@ def _median_blur_image(image: torch.Tensor, blur_limit: torch.Tensor, probabilit
     kernel_size = kernel_size - 1 if kernel_size % 2 == 0 else kernel_size
     
     padding = kernel_size // 2
-    image_padded = F.pad(image.permute(2, 0, 1).unsqueeze(0), (padding, padding, padding, padding), mode='reflect')
+    image_padded = F.pad(image.permute(2, 0, 1).unsqueeze(0).float(), (padding, padding, padding, padding), mode='reflect')
     
     patches = image_padded.unfold(2, kernel_size, 1).unfold(3, kernel_size, 1)
     patches = patches.contiguous().view(3, image.size(0), image.size(1), -1)
     
     median_values = patches.median(dim=-1)[0]
-    
-    return median_values.permute(1, 2, 0)
+
+    return median_values.permute(1, 2, 0).byte()
 
 if __name__ == '__main__':
     # Test the blur functions
     import cv2
-    image = cv2.imread("tests/富士山.jpg")
+    image = cv2.imread("tests/富士山_resized.jpg")
+    print(image.shape)
     image = torch.from_numpy(image).to(device='cuda')
     blur_limit = torch.tensor(7)
-    blurred_image = _blur_image(image, blur_limit, torch.tensor(0.5))
-    median_blurred_image = _median_blur_image(image, blur_limit)
+    blurred_image = _blur_image(image, blur_limit, torch.tensor(0.99))
+    median_blurred_image = _median_blur_image(image, blur_limit, torch.tensor(0.99))
     blurred_image = blurred_image.cpu().numpy().astype(np.uint8)
     median_blurred_image = median_blurred_image.cpu().numpy().astype(np.uint8)
     cv2.imwrite("tests/富士山_blurred.jpg", blurred_image)

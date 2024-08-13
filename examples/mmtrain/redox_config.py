@@ -57,8 +57,8 @@ datablock_spec = {
 
 # record_files = ["/workspace/redoxify_example/record/example.record"]
 # index_files = ["/workspace/redoxify_example/record/example.idx"]
-record_files = sorted(glob.glob("/workspace/redoxify_example/record/coco_train/*record*"))
-index_files = sorted(glob.glob("/workspace/redoxify_example/record/coco_train/*index*"))
+record_files = sorted(glob.glob("record/coco_train/*record*"))
+index_files = sorted(glob.glob("record/coco_train/*index*"))
 tf_files = [TFRecordFile(record_file=rec_file, index_file=idx_file) for rec_file, idx_file in zip(record_files, index_files)]
 reader_cfg = TFReaderConfig(tf_feature_spec=tf_feature_spec, datablock_spec=datablock_spec, random_shuffle=False)
 
@@ -98,14 +98,14 @@ resize_cfg = ResizeConfig(target_height=640, target_width=640, keep_aspect_ratio
 img_pad_setting = ImagePadSetting(image_key=DataKey("image"), output_key=DataKey("image"))
 box_pad_setting = BoxPadSetting(box_key=DataKey("bboxes"), output_key=DataKey("bboxes"))
 pad_map = PadInputOutputMap(image_pad_settings=[img_pad_setting], box_pad_settings=[box_pad_setting])
-pad_cfg = PadConfig(target_height=640, target_width=640, fill_values=128.0)
+pad_cfg = PadConfig(target_height=640, target_width=640, fill_values=114.0, aligh_center=True)
 
 
 img_mosaic_setting = ImageMosaicSetting(image_key=DataKey("image"), output_key=DataKey("image"))
 box_mosaic_setting = BoxMosaicSetting(box_key=DataKey("bboxes"), output_key=DataKey("bboxes"))
 label_mosaic_setting = LabelMosaicSetting(label_key=DataKey("labels"), output_key=DataKey("labels"))
 mosaic_map = MosaicInputOutputMap(image_mosaic_settings=[img_mosaic_setting], box_mosaic_settings=[box_mosaic_setting], label_mosaic_settings=[label_mosaic_setting])
-mosaic_cfg = MosaicConfig(mosaic_height=640, mosaic_width=640, fill_values=128.0)
+mosaic_cfg = MosaicConfig(mosaic_height=640, mosaic_width=640, fill_values=114.0)
 
 img_mixup_setting = ImageMixupSetting(image_key=DataKey("image"), output_key=DataKey("image"))
 box_mixup_setting = BoxMixupSetting(box_key=DataKey("bboxes"), output_key=DataKey("bboxes"))
@@ -131,11 +131,11 @@ hsv_cfg = RandomHSVConfig(hue_delta=30, saturation_delta=0.3, value_delta=0.3, p
 
 img_blur_setting = ImageBlurSetting(image_key=DataKey("image"), output_key=DataKey("image"))
 blur_map = BlurInputOutputMap(image_blur_settings=[img_blur_setting])
-blur_cfg = BlurConfig(blur_limit=9, probability=0.5)
+blur_cfg = BlurConfig(blur_limit=7, probability=0.01)
 
 img_median_blur_setting = ImageMedianBlurSetting(image_key=DataKey("image"), output_key=DataKey("image"))
 median_blur_map = MedianBlurInputOutputMap(image_blur_settings=[img_median_blur_setting])
-median_blur_cfg = MedianBlurConfig(blur_limit=9, probability=0.5)
+median_blur_cfg = MedianBlurConfig(blur_limit=7, probability=0.01)
 
 output_map = dict(
     images=SingleOutputSpec(input_key=DataKey("image"), pad_for_batch=True, split_batch_into_list=True),
@@ -151,83 +151,32 @@ output_map = dict(
 
 mm_backend_args = None
 albu_train_transforms = [
-    # dict(
-    #     type='ShiftScaleRotate',
-    #     shift_limit=0.0625,
-    #     scale_limit=0.0,
-    #     rotate_limit=0,
-    #     interpolation=1,
-    #     p=0.5),
-    dict(
-        type='RandomBrightnessContrast',
-        brightness_limit=[0.1, 0.3],
-        contrast_limit=[0.1, 0.3],
-        p=0.2),
-    # dict(
-    #     type='OneOf',
-    #     transforms=[
-    #         dict(
-    #             type='RGBShift',
-    #             r_shift_limit=10,
-    #             g_shift_limit=10,
-    #             b_shift_limit=10,
-    #             p=1.0),
-    #         dict(
-    #             type='HueSaturationValue',
-    #             hue_shift_limit=20,
-    #             sat_shift_limit=30,
-    #             val_shift_limit=20,
-    #             p=1.0)
-    #     ],
-    #     p=0.1),
-    # dict(type='JpegCompression', quality_lower=85, quality_upper=95, p=0.2),
-    # dict(type='ChannelShuffle', p=0.1),
-    # dict(
-    #     type='OneOf',
-    #     transforms=[
-    #         dict(type='Blur', blur_limit=3, p=1.0),
-    #         dict(type='MedianBlur', blur_limit=3, p=1.0)
-    #     ],
-    #     p=0.1),
+    dict(type='CLAHE', p=0.01)
 ]
 
 img_scale = (640, 640)
 mm_pipeline = [
-    dict(type='Resize', 
-         scale=img_scale, 
-         keep_ratio=True),
-    dict(type='Pad', 
-         size=img_scale, 
-         pad_val=dict(img=(114,114,114,))
-         ),
-    dict(type='mmdet.YOLOXHSVRandomAug'),
-    dict(type='mmyolo.Mosaic', 
-         img_scale=img_scale, 
-         center_ratio_range=(1.0,1.0),
-         use_cached=True,
-         pad_val=114.0),
     dict(
-        type='mmyolo.YOLOXMixUp',
-        img_scale=img_scale,
-        use_cached=True,
-        ratio_range=(0.9, 1.1),
-        pad_val=114.0),
-
-    # dict(type='mmdet.RandomFlip', prob=0.5),
-    # dict(type='mmdet.FilterAnnotations', min_gt_bbox_wh=(1, 1), keep_empty=False),
-    # dict(
-    #     type='mmdet.Albu',
-    #     transforms=albu_train_transforms,
-    #     bbox_params=dict(
-    #         type='BboxParams',
-    #         format='pascal_voc',
-    #         label_fields=['gt_bboxes_labels', 'gt_ignore_flags']),
-    #     keymap={
-    #         'img': 'image',
-    #         'gt_bboxes': 'bboxes',
-    #     },
-    # ),
-    # dict(type='mmdet.PackDetInputs')
+        type='mmyolo.YOLOv5RandomAffine',
+        max_rotate_degree=0.0,
+        max_shear_degree=0.0,
+        scaling_ratio_range=(0.5, 1.5),
+        max_aspect_ratio=100,
+        # img_scale is (width, height)
+        border=(-img_scale[0] // 2, -img_scale[1] // 2),
+        border_val=(114, 114, 114)),
+    dict(
+        type='mmdet.Albu',
+        transforms=albu_train_transforms,
+        bbox_params=dict(
+            type='BboxParams',
+            format='pascal_voc',
+            label_fields=['gt_bboxes_labels', 'gt_ignore_flags']),
+        keymap={
+            'img': 'image',
+            'gt_bboxes': 'bboxes'
+        }),
+    dict(type='mmdet.RandomFlip', prob=0.5),
 ]
 
 redox_dataset_config = dict(
@@ -241,11 +190,11 @@ redox_dataset_config = dict(
         config=reader_cfg,
     ),
     transform_sequence=[
-        dict(
-            type='RandomCropWithBoxes',
-            config=crop_cfg,
-            inout_map=crop_map
-        ),
+        # dict(
+        #     type='RandomCropWithBoxes',
+        #     config=crop_cfg,
+        #     inout_map=crop_map
+        # ),
         dict(
             type='Resize',
             config=resize_cfg,
@@ -257,10 +206,20 @@ redox_dataset_config = dict(
             inout_map=pad_map
         ),
         dict(
-            type='RandomSingleDirectionFlip',
-            config=flip_cfg,
-            inout_map=flip_map
+            type='Resize',
+            config=resize_cfg,
+            inout_map=resize_map
         ),
+        dict(
+            type='Mosaic',
+            config=mosaic_cfg,
+            inout_map=mosaic_map
+        ),
+        # dict(
+        #     type='RandomSingleDirectionFlip',
+        #     config=flip_cfg,
+        #     inout_map=flip_map
+        # ),
         dict(
             type='RandomHSVAug',
             config=hsv_cfg,
@@ -276,16 +235,11 @@ redox_dataset_config = dict(
             config=median_blur_cfg,
             inout_map=median_blur_map
         ),
-        dict(
-            type='Mosaic',
-            config=mosaic_cfg,
-            inout_map=mosaic_map
-        ),
-        dict(
-            type='Mixup',
-            config=mixup_cfg,
-            inout_map=mixup_map
-        ),
+        # dict(
+        #     type='Mixup',
+        #     config=mixup_cfg,
+        #     inout_map=mixup_map
+        # ),
     ],
     output_map=output_map,
     normalized_bbox=True,
@@ -293,8 +247,6 @@ redox_dataset_config = dict(
         image_key='images',
         bbox_key='bboxes',
         mm_key_mapping={"images": "img", "classes": "gt_bboxes_labels", "bboxes": "gt_bboxes"},
-        mm_pipeline=None)
+        mm_pipeline=mm_pipeline)
         # mm_pipeline=None)
 )
-
-

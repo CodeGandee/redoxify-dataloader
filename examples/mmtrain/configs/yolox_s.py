@@ -2,11 +2,11 @@ import sys
 sys.path.append('/workspace/github/redoxify-dataloader/src')
 sys.path.append('/workspace/github/redoxify-dataloader/')
 custom_imports = dict(
-    imports=['redoxify.plugin.mmdetection.RedoxMMRunner'],
+    imports=['redoxify.plugin.mmdetection.runner'],
     allow_failed_imports=False)
 # from redoxify.plugin.mmdetection.RedoxMMRunner import RedoxMMRunner
 from examples.mmtrain.redox_config import redox_dataset_config as redox_dataset_config
-runner_type='redoxify.plugin.mmdetection.RedoxMMRunner.RedoxMMRunner'
+runner_type='redoxify.plugin.mmdetection.runner.RedoxMMRunner'
 # runner_type='RedoxMMRunner'
 
 auto_scale_lr = dict(base_batch_size=64, enable=False)

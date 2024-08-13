@@ -121,7 +121,6 @@ class ImagesBlock(DataBlock):
             new_spec.encoding = C.ImageEncoding.raw
             new_spec.width = target_width
             new_spec.height = target_height
-            print(f"target_width: {target_width}, target_height: {target_height}")
             resized_image = fn.resize(decoded_image, 
                                        resize_x=target_width, 
                                        resize_y=target_height,

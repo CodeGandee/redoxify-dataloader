@@ -138,6 +138,8 @@ if __name__ == "__main__":
                 tf_record_close_stack, output_path, num_shards)
         coco_iterator = coco_image_annotation_iterator(coco_annotation_file, images_dir)
         for idx, (image, bboxes, class_labels, qualities) in enumerate(coco_iterator):
+            if idx>200:
+                break
             if (idx+1) % 1000 == 0:
                 logging.info('On image %d', idx+1)
             key, tf_example = create_tf_example(image, bboxes, class_labels, qualities)
@@ -146,7 +148,7 @@ if __name__ == "__main__":
                 output_tfrecords[shard_idx].write(tf_example.SerializeToString())
                 
     tfrecord_files = glob.glob(f'{output_path}*')
-    tfrecord2idx_script = "./tfrecord2idx"
+    tfrecord2idx_script = "./examples/tfrecord_tools/tfrecord2idx"
 
     for tfrecord_file in tfrecord_files:
         tfrecord_idx = tfrecord_file.replace(record_file_prefix, index_file_prefix)

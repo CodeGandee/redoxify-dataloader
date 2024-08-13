@@ -147,7 +147,7 @@ class RedoxMMDetDataset(RedoxBaseDataset):
             return None
         
     def __iter__(self):
-        for data in self.redox_iterator:
+        for idx, data in enumerate(self.redox_iterator):
             yield self.postprocess(data)
     
     def __len__(self):

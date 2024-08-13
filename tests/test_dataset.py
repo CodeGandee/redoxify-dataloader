@@ -5,8 +5,8 @@ import time
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 
-sys.path.append('/workspace/redoxify-dataloader/')
-sys.path.append('/workspace/redoxify-dataloader/src')
+sys.path.append('/workspace/github/redoxify-dataloader/')
+sys.path.append('/workspace/github/redoxify-dataloader/src')
 from examples.mmtrain.redox_config import redox_dataset_config
 from redoxify.datasets.RedoxBaseDataset import RedoxBaseDataset
 from redoxify.plugin.mmdetection.datasets.RedoxMMDetDataset import RedoxMMDetDataset
@@ -30,10 +30,9 @@ def test_RedoxBaseDataset(dataset_config):
     pbar = tqdm(total=len(dataloader))
     for i, data in enumerate(dataloader):
         pbar.update()
-        end_time = time.time()
-        if end_time - start_time > 300:
-            break
-    print(f"Length of dataset: {len(dataset)}, time cosumed: {end_time-start_time}")
+    pbar = tqdm(total=len(dataloader))
+    for i, data in enumerate(dataloader):
+        pbar.update()
 
 if __name__ == '__main__':
     test_RedoxBaseDataset(redox_dataset_config)

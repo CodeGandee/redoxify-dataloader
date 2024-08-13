@@ -15,7 +15,7 @@ from mmdet.utils import setup_cache_size_limit_of_dynamo
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
-    parser.add_argument('--config', help='train config file path', default='examples/mmtrain/yolox_s.py')
+    parser.add_argument('--config', help='train config file path', default='examples/mmtrain/configs/yolov8_s.py')
     # parser.add_argument('--config', help='train config file path', default='mmtrain/ddq_detr.py')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
@@ -53,7 +53,7 @@ def parse_args():
     # When using PyTorch version >= 2.0.0, the `torch.distributed.launch`
     # will pass the `--local-rank` parameter to `tools/train.py` instead
     # of `--local_rank`.
-    parser.add_argument('--local_rank', '--local-rank', type=int, default=2)
+    parser.add_argument('--local_rank', '--local-rank', type=int, default=0)
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
