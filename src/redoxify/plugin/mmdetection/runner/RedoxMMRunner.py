@@ -7,7 +7,7 @@ from mmengine.registry import RUNNERS
 from mmengine.runner import Runner
 from mmengine.config import Config, ConfigDict
 from redoxify.plugin.mmdetection.datasets.RedoxMMDetDataset import RedoxMMDetDataset
-from redoxify.plugin.mmdetection.datasets.utils import pseudo_collate
+from redoxify.plugin.mmdetection.datasets.utils import pseudo_collate, yolov5_collate
 
 ConfigType = Union[Dict, Config, ConfigDict]
 

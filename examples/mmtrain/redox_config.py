@@ -50,7 +50,7 @@ tf_feature_spec = {
 datablock_spec = {
     "image": ImageSpec(encoding='jpg',channel=3),
     "labels": VectorSpec(dtype=DALIDataType.INT64),
-    "bboxes": BoxSpec(),
+    "bboxes": BoxSpec(format='xyxy', is_normalized=True),
     "qualities": VectorSpec(),
 }
 
@@ -105,7 +105,7 @@ img_mosaic_setting = ImageMosaicSetting(image_key=DataKey("image"), output_key=D
 box_mosaic_setting = BoxMosaicSetting(box_key=DataKey("bboxes"), output_key=DataKey("bboxes"))
 label_mosaic_setting = LabelMosaicSetting(label_key=DataKey("labels"), output_key=DataKey("labels"))
 mosaic_map = MosaicInputOutputMap(image_mosaic_settings=[img_mosaic_setting], box_mosaic_settings=[box_mosaic_setting], label_mosaic_settings=[label_mosaic_setting])
-mosaic_cfg = MosaicConfig(mosaic_height=640, mosaic_width=640, fill_values=114.0)
+mosaic_cfg = MosaicConfig(mosaic_height=640, mosaic_width=640, fill_values=114.0, probability=0.5)
 
 img_mixup_setting = ImageMixupSetting(image_key=DataKey("image"), output_key=DataKey("image"))
 box_mixup_setting = BoxMixupSetting(box_key=DataKey("bboxes"), output_key=DataKey("bboxes"))
@@ -190,11 +190,11 @@ redox_dataset_config = dict(
         config=reader_cfg,
     ),
     transform_sequence=[
-        # dict(
-        #     type='RandomCropWithBoxes',
-        #     config=crop_cfg,
-        #     inout_map=crop_map
-        # ),
+        dict(
+            type='RandomCropWithBoxes',
+            config=crop_cfg,
+            inout_map=crop_map
+        ),
         dict(
             type='Resize',
             config=resize_cfg,
@@ -205,11 +205,11 @@ redox_dataset_config = dict(
             config=pad_cfg,
             inout_map=pad_map
         ),
-        dict(
-            type='Resize',
-            config=resize_cfg,
-            inout_map=resize_map
-        ),
+        # dict(
+        #     type='Resize',
+        #     config=resize_cfg,
+        #     inout_map=resize_map
+        # ),
         dict(
             type='Mosaic',
             config=mosaic_cfg,
@@ -220,21 +220,21 @@ redox_dataset_config = dict(
         #     config=flip_cfg,
         #     inout_map=flip_map
         # ),
-        dict(
-            type='RandomHSVAug',
-            config=hsv_cfg,
-            inout_map=hsv_map
-        ),
-        dict(
-            type='Blur',
-            config=blur_cfg,
-            inout_map=blur_map
-        ),
-        dict(
-            type='MedianBlur',
-            config=median_blur_cfg,
-            inout_map=median_blur_map
-        ),
+        # dict(
+        #     type='RandomHSVAug',
+        #     config=hsv_cfg,
+        #     inout_map=hsv_map
+        # ),
+        # dict(
+        #     type='Blur',
+        #     config=blur_cfg,
+        #     inout_map=blur_map
+        # ),
+        # dict(
+        #     type='MedianBlur',
+        #     config=median_blur_cfg,
+        #     inout_map=median_blur_map
+        # ),
         # dict(
         #     type='Mixup',
         #     config=mixup_cfg,
@@ -246,7 +246,8 @@ redox_dataset_config = dict(
     mm_config=dict(
         image_key='images',
         bbox_key='bboxes',
+        label_key='classes',
         mm_key_mapping={"images": "img", "classes": "gt_bboxes_labels", "bboxes": "gt_bboxes"},
-        mm_pipeline=mm_pipeline)
+        mm_pipeline=None)
         # mm_pipeline=None)
 )

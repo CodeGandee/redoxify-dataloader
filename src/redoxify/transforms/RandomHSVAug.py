@@ -83,8 +83,8 @@ class RandomHSVAug(BaseTransform):
             for sub_key in image_datablock.get_keys():
                 out_image_spec = image_datablock.get_spec(sub_key).clone()
                 _image = image_datablock.get_decoded_tensor(sub_key)
-                # if fn.random.coin_flip(probability=self.m_hsv_config.probability):
-                _image = fn.hsv(_image, hue=hue, saturation=saturation, value=value)
+                if fn.random.coin_flip(probability=self.m_hsv_config.probability):
+                    _image = fn.hsv(_image, hue=hue, saturation=saturation, value=value)
                 out_img_blk.add_data(sub_key, _image, out_image_spec)
             output_data[output_key.main_key] = out_img_blk
         return output_data, True

@@ -1,6 +1,7 @@
 
 import cv2
 import torch
+from typing import List, Union
 
 import numpy as np
 from mmcv.transforms import to_tensor
@@ -124,6 +125,7 @@ class RedoxMMDetDataset(RedoxBaseDataset):
                  mm_pipeline=None,
                  image_key="images",
                  bbox_key="bboxes",
+                 label_key="labels",
                  ignore_flags=None,
                  mm_key_mapping={}, **kwargs):
         '''
@@ -137,6 +139,7 @@ class RedoxMMDetDataset(RedoxBaseDataset):
         self.mm_transform = self.build_mm_transforms(mm_pipeline)
         self.image_key = image_key
         self.bbox_key = bbox_key
+        self.label_key = label_key
         self.ignore_flags = ignore_flags
         self.mm_key_mapping = mm_key_mapping
 
@@ -149,9 +152,6 @@ class RedoxMMDetDataset(RedoxBaseDataset):
     def __iter__(self):
         for idx, data in enumerate(self.redox_iterator):
             yield self.postprocess(data)
-    
-    def __len__(self):
-        return self.redox_iterator.size//self.redox_iterator.batch_size
     
     def apply_mm_transforms(self, data):
         if self.mm_transform is None:
@@ -186,11 +186,12 @@ class RedoxMMDetDataset(RedoxBaseDataset):
             result =dict(
                 img=image,
                 gt_bboxes=bbox,
+                gt_bboxes_labels=data[0].tensors.get(self.label_key, None)[idx],
                 gt_ignore_flags=ignore_flags[idx],
                 img_shape=(img_height.item(), img_width.item()),
             )
             for key, value in self.mm_key_mapping.items():
-                if key != "images" and key != "bboxes" and key != "ignore_flags":
+                if key not in [self.image_key, self.bbox_key, self.label_key, ignore_flags]:
                     result[value] = data[0].tensors[key][idx]
             result = self.apply_mm_transforms(result)
             data_batch.append(self.packer.transform(result))

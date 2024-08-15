@@ -114,9 +114,9 @@ loss_dfl_weight = 1.5 / 4
 lr_factor = 0.01  # Learning rate scaling factor
 weight_decay = 0.0005
 # Save model checkpoint and validation intervals in stage 1
-save_epoch_intervals = 1
+save_epoch_intervals = 100
 # validation intervals in stage 2
-val_interval_stage2 = 1
+val_interval_stage2 = 100
 # The maximum checkpoints to keep.
 max_keep_ckpts = 2
 

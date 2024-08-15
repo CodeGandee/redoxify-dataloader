@@ -216,7 +216,8 @@ class RedoxDataIterator(DALIGenericIterator):
             pipelines=pipelines,
             output_map=dali_output_map,
             reader_name=config.reader_name,
-            auto_reset=config.auto_reset,
+            auto_reset=False,
+            # auto_reset=config.auto_reset,
         )
         
         self.m_output_map = pipeline_output_map
