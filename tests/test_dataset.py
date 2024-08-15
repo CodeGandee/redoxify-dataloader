@@ -10,7 +10,6 @@ sys.path.append('/workspace/github/redoxify-dataloader/src')
 from examples.mmtrain.redox_config import redox_dataset_config
 from redoxify.datasets.RedoxBaseDataset import RedoxBaseDataset
 from redoxify.plugin.mmdetection.datasets.RedoxMMDetDataset import RedoxMMDetDataset
-from redoxify.plugin.mmdetection.datasets import RedoxMMYoloDataset
 from redoxify.plugin.mmdetection.datasets.utils import pseudo_collate, yolov5_collate
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
@@ -30,15 +29,15 @@ def test_RedoxBaseDataset(dataset_config):
     pbar = tqdm(total=len(dataloader))
     for i, data in enumerate(dataloader):
         pbar.update()
-        for j in range(len(data['inputs'])):
-            img = data['inputs'][j].permute(1, 2, 0).cpu().numpy().copy()
-            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-            bboxes = data['data_samples'][j].gt_instances.bboxes.cpu().numpy()
-            labels = data['data_samples'][j].gt_instances.labels.cpu().numpy()
-            draw_bboxes(img, bboxes, labels)
-            cv2.imwrite(f'temp/test_dataset_{i}_{j}.jpg', img)
-        if i > 4:
-            break
+        # for j in range(len(data['inputs'])):
+        #     img = data['inputs'][j].permute(1, 2, 0).cpu().numpy().copy()
+        #     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        #     bboxes = data['data_samples'][j].gt_instances.bboxes.cpu().numpy()
+        #     labels = data['data_samples'][j].gt_instances.labels.cpu().numpy()
+        #     draw_bboxes(img, bboxes, labels)
+        #     cv2.imwrite(f'temp/test_dataset_{i}_{j}.jpg', img)
+        # if i > 4:
+        #     break
 
 if __name__ == '__main__':
     test_RedoxBaseDataset(redox_dataset_config)

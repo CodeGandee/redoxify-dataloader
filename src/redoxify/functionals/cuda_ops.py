@@ -45,8 +45,14 @@ def _dali_mosaic_images(images: list[torch.Tensor], boxes: list[torch.Tensor], l
         mosaic[:image_shape[0], image_shape[1]:] = images[selected_indices[1]]
         mosaic[image_shape[0]:, :image_shape[1]] = images[selected_indices[2]]
         mosaic[image_shape[0]:, image_shape[1]:] = images[selected_indices[3]]
-        mosaic_boxes.append(torch.cat([(boxes[i]+offsets[off_idx])/2 for off_idx, i in enumerate(selected_indices)], dim=0))
-        mosaic_labels.append(torch.cat([labels[i] for i in selected_indices], dim=0))
+        boxes_to_cat = []
+        labels_to_cat = []
+        for off_idx, i in enumerate(selected_indices):
+            if boxes[i].shape[1] != 0:
+                boxes_to_cat.append((boxes[i]+offsets[off_idx])/2)
+                labels_to_cat.append(labels[i])
+        mosaic_boxes.append(torch.cat(boxes_to_cat, dim=0))
+        mosaic_labels.append(torch.cat(labels_to_cat, dim=0))
     return mosaics, mosaic_boxes, mosaic_labels
 
 
