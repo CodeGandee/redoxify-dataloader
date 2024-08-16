@@ -123,15 +123,12 @@ class Mosaic(BaseTransform):
                 boxes_data_spec = boxes_datablock.get_spec(sub_key)
                 labels_data = labels_datablock.get_data(sub_key)
                 labels_data_spec = labels_datablock.get_spec(sub_key)
-                if fn.random.coin_flip(probability=config.probability):
-                    mosaic_image, mosaic_boxes, mosaic_labels = dali_mosaic_images(image_data.gpu(), boxes_data.gpu(), labels_data.gpu())
-                    mosaic_image = fn.resize(mosaic_image, resize_x=config.mosaic_width, resize_y=config.mosaic_height)
-                    image_data_spec.height = config.mosaic_height
-                    image_data_spec.width = config.mosaic_width
-                else:
-                    mosaic_image = image_data.gpu()
-                    mosaic_boxes = boxes_data.gpu()
-                    mosaic_labels = labels_data.gpu()
+                mosaic_image, mosaic_boxes, mosaic_labels = dali_mosaic_images(image_data.gpu(), boxes_data.gpu(), 
+                                                                               labels_data.gpu(), config.probability)
+                mosaic_image = fn.resize(mosaic_image, resize_x=config.mosaic_width, resize_y=config.mosaic_height)
+                image_data_spec.height = config.mosaic_height
+                image_data_spec.width = config.mosaic_width
+
                 out_image_blk.add_data(sub_key, mosaic_image, image_data_spec)
                 out_boxes_blk.add_data(sub_key, mosaic_boxes, boxes_data_spec)
                 out_labels_blk.add_data(sub_key, mosaic_labels, labels_data_spec)
