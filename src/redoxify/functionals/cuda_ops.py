@@ -62,7 +62,6 @@ def _dali_mosaic_images(images_list: List[torch.Tensor], boxes_list: List[torch.
     for img_idx in range(len(images_list)):
         probability = probabilities_list[img_idx]
         if torch.rand(probability.shape, device=probability.device) > probability:
-            print(images_list)
             mosaics[img_idx] = images_list[img_idx]
             mosaic_boxes[img_idx] = boxes_list[img_idx]
             mosaic_labels[img_idx] = labels_list[img_idx]
