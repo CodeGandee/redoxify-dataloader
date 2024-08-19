@@ -90,7 +90,7 @@ def coco_image_annotation_iterator(coco_annotation_file, images_dir, normalize_b
             image.save(encoded_jpg_io, format='JPEG')
             encoded_jpg = encoded_jpg_io.getvalue()
         if img_height is None or img_width is None:
-            img_height, img_width = image.size
+            img_width, img_height = image.size
         ann_ids = coco.getAnnIds(imgIds=img_id)
         anns = coco.loadAnns(ann_ids)
         for ann in anns:
