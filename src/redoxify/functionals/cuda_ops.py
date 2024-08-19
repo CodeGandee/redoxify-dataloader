@@ -2,6 +2,7 @@
 import torch
 import random
 import numpy as np
+from typing import List
 
 from nvidia.dali.plugin.pytorch.fn import torch_python_function
 from nvidia.dali.pipeline import DataNode as DALINode
@@ -16,8 +17,8 @@ def dali_mosaic_images(images: DALINode, boxes: DALINode, labels: DALINode, prob
     )
     return func
 
-def _dali_mosaic_images(images_list: list[torch.Tensor], boxes_list: list[torch.Tensor], 
-                        labels_list: list[torch.Tensor], probabilities_list: list[torch.Tensor]):
+def _dali_mosaic_images(images_list: List[torch.Tensor], boxes_list: List[torch.Tensor], 
+                        labels_list: List[torch.Tensor], probabilities_list: List[torch.Tensor]):
     """Mosaic augmentation.
 
     Given 4 images, mosaic transform combines them into
@@ -78,7 +79,7 @@ def dali_mixup_images(images: DALINode, boxes: DALINode, labels: DALINode, ratio
     )
     return func
 
-def _dali_mixup_images(images: list[torch.Tensor], boxes: list[torch.Tensor], labels: list[torch.Tensor], ratioes: list[torch.Tensor]):
+def _dali_mixup_images(images: List[torch.Tensor], boxes: List[torch.Tensor], labels: List[torch.Tensor], ratioes: List[torch.Tensor]):
     shapes = [img.shape for img in images]
     assert len(set(shapes)) == 1, "All images should have the same shape in mixup transform"
     num_images = len(images)
