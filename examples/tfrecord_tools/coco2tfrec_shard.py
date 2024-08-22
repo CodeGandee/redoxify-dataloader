@@ -74,6 +74,7 @@ def coco_image_annotation_iterator(coco_annotation_file, images_dir, normalize_b
     sorted_categories = sorted(categories, key=lambda x: x['id'])
     category_mapping = {cat['id']: idx for idx, cat in enumerate(sorted_categories)}
     img_ids = coco.getImgIds()
+    empty_bbox_count = 0
     for img_id in img_ids:
         img_info = coco.loadImgs(img_id)[0]
         img_path = os.path.join(images_dir, img_info['file_name'])
@@ -98,13 +99,15 @@ def coco_image_annotation_iterator(coco_annotation_file, images_dir, normalize_b
         
         bboxes = np.array([ann['bbox'] for ann in anns])
         if bboxes.size < 4:
-            bboxes = np.zeros((1, 4), dtype=np.float32)
+            bboxes = np.zeros((0, 4), dtype=np.float32)
+            empty_bbox_count += 1
+            print(f'Empty bbox count: {empty_bbox_count}')
         if normalize_bbox:
             bboxes /= np.array([img_width, img_height, img_width, img_height])
             bboxes = np.clip(bboxes, 0, 1)
         class_labels = np.array([ann['category_id'] for ann in anns])
         if class_labels.size < 1:
-            class_labels = np.zeros(1, dtype=np.int64)
+            class_labels = np.zeros(0, dtype=np.int64)
         #convert xywh to xyxy
         bboxes[:, 2] += bboxes[:, 0]
         bboxes[:, 3] += bboxes[:, 1]

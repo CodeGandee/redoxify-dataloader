@@ -22,7 +22,7 @@ def mm_hsv(image, hue, saturation, value):
     hue, sat, val = cv2.split(
             cv2.cvtColor(image, cv2.COLOR_BGR2HSV))
     table_list = np.arange(0, 256, dtype=hsv_gains.dtype)
-    lut_hue = ((table_list * hsv_gains[0]) % 180).astype(np.uint8)
+    lut_hue = ((table_list + hsv_gains[0]) % 180).astype(np.uint8)
     lut_sat = np.clip(table_list * hsv_gains[1], 0, 255).astype(np.uint8)
     lut_val = np.clip(table_list * hsv_gains[2], 0, 255).astype(np.uint8)
 
@@ -48,7 +48,7 @@ def hsv_pipeline(device, hue, saturation, value):
 pipe_cpu = hsv_pipeline(
     device="gpu",
     hue=0,
-    saturation=1.0,
+    saturation=1.9,
     value=1.0,
     batch_size=batch_size,
     num_threads=1,
@@ -61,11 +61,6 @@ for i, data in enumerate(dali_iter):
     hsv_dali = img_hsv.cpu().numpy()[0]
     hsv_dali = cv2.cvtColor(hsv_dali, cv2.COLOR_RGB2BGR)
     cv2.imwrite(f'temp/hsv_dali_{i}.jpg', hsv_dali)
-    for j in range(1):
-        hsv_mm = mm_hsv(img, 1.0, 1.0+j*0.01, 1.0)
-        diff = np.abs(hsv_dali.astype(np.int32) - img.astype(np.int32))
-        print(diff.mean(), diff.max(), f"saturation={j*0.01}")
-        # hsv_np = hsv_augment(img, 1.0, 1.1+j*0.01, 1.0)
-        # cv2.imwrite(f'temp/hsv_mm_{i}_{j}.jpg', hsv_mm)
-        # cv2.imwrite(f'temp/hsv_np_{i}_{j}.jpg', hsv_np)
+    hsv_mm = mm_hsv(img, 0, 1.5, 1.0)
+    cv2.imwrite(f'temp/hsv_mm_{i}.jpg', hsv_mm)
     break

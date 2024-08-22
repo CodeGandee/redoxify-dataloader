@@ -194,7 +194,7 @@ if __name__ == '__main__':
     probabilities = [torch.tensor(0.8, device='cuda') for _ in range(img_num)]
     pad_val_list = [torch.tensor(114, device='cuda') for _ in range(img_num)]
     sub_image_scale = [torch.tensor([640, 640], device='cuda') for _ in range(img_num)]
-    center_ratio_range_list = [torch.tensor([0.1, 1.9], device='cuda') for _ in range(img_num)]
+    center_ratio_range_list = [torch.tensor([0.5, 1.5], device='cuda') for _ in range(img_num)]
     mosaics, mosaic_boxes, mosaic_labels = _dali_mosaic_images(images, boxes, labels, pad_val_list, sub_image_scale, center_ratio_range_list,
                                                                probabilities)
     for i, mosaic in enumerate(mosaics):
