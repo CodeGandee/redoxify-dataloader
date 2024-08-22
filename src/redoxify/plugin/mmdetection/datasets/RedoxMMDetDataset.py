@@ -183,6 +183,7 @@ class RedoxMMDetDataset(RedoxBaseDataset):
             bbox = bboxes[idx]
             if self.normalized_bbox:
                 bbox = bbox * torch.tensor([img_width, img_height, img_width, img_height], dtype=bbox.dtype, device=bbox.device)
+            image = image[:, :, [2, 1, 0]]
             result =dict(
                 img=image,
                 gt_bboxes=bbox,

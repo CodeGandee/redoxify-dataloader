@@ -91,7 +91,7 @@ def coco_image_annotation_iterator(coco_annotation_file, images_dir, normalize_b
             encoded_jpg = encoded_jpg_io.getvalue()
         if img_height is None or img_width is None:
             img_width, img_height = image.size
-        ann_ids = coco.getAnnIds(imgIds=img_id)
+        ann_ids = coco.getAnnIds(imgIds=img_id, iscrowd=False)
         anns = coco.loadAnns(ann_ids)
         for ann in anns:
             ann['category_id'] = category_mapping[ann['category_id']]
@@ -126,7 +126,7 @@ def draw_and_save_img(image, bboxes, class_labels, output_file):
 if __name__ == "__main__":
     coco_annotation_file = '/mnt/data/coco2017/annotations/instances_train2017.json'
     images_dir = '/mnt/data/coco2017/train2017'
-    output_dir = './record/coco_mini/'
+    output_dir = './record/coco_train/'
     record_file_prefix = 'coco_train_record'
     index_file_prefix = 'coco_train_index'
     num_shards = 8
@@ -140,8 +140,6 @@ if __name__ == "__main__":
         for idx, (image, bboxes, class_labels, qualities) in enumerate(coco_iterator):
             if (idx+1) % 1000 == 0:
                 logging.info('On image %d', idx+1)
-            if idx>800:
-                break
             key, tf_example = create_tf_example(image, bboxes, class_labels, qualities)
             shard_idx = idx % num_shards
             if tf_example:

@@ -31,7 +31,6 @@ def test_RedoxBaseDataset(dataset_config):
         pbar.update()
         for j in range(len(data['inputs'])):
             img = data['inputs'][j].permute(1, 2, 0).cpu().numpy().copy()
-            print(img.shape)
             # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             bboxes = data['data_samples'][j].gt_instances.bboxes.cpu().numpy()
             labels = data['data_samples'][j].gt_instances.labels.cpu().numpy()

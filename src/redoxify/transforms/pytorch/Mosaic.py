@@ -7,7 +7,7 @@ import nvidia.dali.fn as fn
 from nvidia.dali.types import DALIDataType
 
 from redoxify.datablocks.DataBlock import DataBlock, DALINode
-from redoxify.functionals.cuda_ops import dali_mosaic_images
+from redoxify.functionals.cuda_mosaic import dali_mosaic_images
 from redoxify.RedoxTypes import DataKey
 
 from redoxify.datablocks.ImagesBlock import (
@@ -53,7 +53,8 @@ class MosaicInputOutputMap:
 class MosaicConfig:
     mosaic_height : Union[int, float, DALINode] = field(validator=av.instance_of((int, float, DALINode)))
     mosaic_width : Union[int, float, DALINode] = field(validator=av.instance_of((int, float, DALINode)))
-    fill_values : Union[int, float, DALINode, List[int], List[float]] = field(validator=av.instance_of((int, float, DALINode, List)))
+    center_ratio_range : Union[List[float], DALINode] = field(default=[0.5,1.5], validator=av.instance_of((List, DALINode)))
+    fill_val : Union[int, float, DALINode] = field(default=114, validator=av.instance_of((int, float, DALINode)))
     probability : float = field(default=0.5, validator=av.instance_of(float))
     
 @define(kw_only=True, eq=False)
@@ -124,12 +125,14 @@ class Mosaic(BaseTransform):
                 labels_data = labels_datablock.get_data(sub_key)
                 labels_data_spec = labels_datablock.get_spec(sub_key)
                 mosaic_image, mosaic_boxes, mosaic_labels = dali_mosaic_images(image_data.gpu(), boxes_data.gpu(), 
-                                                                               labels_data.gpu(), config.probability)
-                mosaic_image = fn.resize(mosaic_image, resize_x=config.mosaic_width, resize_y=config.mosaic_height)
-                image_data_spec.height = config.mosaic_height
-                image_data_spec.width = config.mosaic_width
+                                                                               labels_data.gpu(), pad_val=config.fill_val, 
+                                                                               sub_image_scale=[config.mosaic_width, config.mosaic_height],
+                                                                               center_ratio_range=config.center_ratio_range,
+                                                                               probability=config.probability)
+                image_data_spec.height = config.mosaic_height*2
+                image_data_spec.width = config.mosaic_width*2
 
-                out_image_blk.add_data(sub_key, mosaic_image, image_data_spec)
+                out_image_blk.add_data(sub_key, fn.copy(mosaic_image), image_data_spec)
                 out_boxes_blk.add_data(sub_key, mosaic_boxes, boxes_data_spec)
                 out_labels_blk.add_data(sub_key, mosaic_labels, labels_data_spec)
             output_data[output_image_key.main_key] = out_image_blk

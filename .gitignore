@@ -142,6 +142,5 @@ weights/
 work_dirs/
 temp/
 test/
-tests/
 *.jpg
 *.png

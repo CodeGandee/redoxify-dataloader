@@ -4,9 +4,9 @@ from nvidia.dali.plugin.pytorch.fn import torch_python_function
 from nvidia.dali.pipeline import DataNode as DALINode
 
 
-def dali_blur_image(image: DALINode, clip_limit: DALINode, grid_size: DALINode):
+def dali_clahe_image(image: DALINode, clip_limit: DALINode, grid_size: DALINode, probability: DALINode):
     func = torch_python_function(
-        image, clip_limit, grid_size,
+        image, clip_limit, grid_size, probability,
         function=_clahe,
         batch_processing=False,
         num_outputs=1,
@@ -15,7 +15,7 @@ def dali_blur_image(image: DALINode, clip_limit: DALINode, grid_size: DALINode):
     return func
 
 
-def _clahe(img: torch.Tensor, clip_limit: torch.Tensor, grid_size: torch.Tensor):
+def _clahe(img: torch.Tensor, clip_limit: torch.Tensor, grid_size: torch.Tensor, probability: torch.Tensor):
     """
     Apply CLAHE to an image.
     
@@ -27,7 +27,8 @@ def _clahe(img: torch.Tensor, clip_limit: torch.Tensor, grid_size: torch.Tensor)
     Returns:
         Tensor: CLAHE applied image.
     """
-    H, W, C = img.shape
+    if torch.rand(1, device=probability.device) > probability:
+        return image
     img = img.permute(2, 0, 1).unsqueeze(0)/255  # Convert to shape (1, C, H, W) and normalize
     clip_limit = clip_limit.float().item()
     grid_size = tuple(grid_size.int().tolist())

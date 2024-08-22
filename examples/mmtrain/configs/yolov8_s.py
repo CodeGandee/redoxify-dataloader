@@ -1,6 +1,6 @@
 import sys
-sys.path.append('/workspace/github/redoxify-dataloader/src')
-sys.path.append('/workspace/github/redoxify-dataloader/')
+sys.path.append('/workspace/redoxify-dataloader/src')
+sys.path.append('/workspace/redoxify-dataloader/')
 custom_imports = dict(
     imports=['redoxify.plugin.mmdetection.runner.RedoxMMYoloRunner'],
     allow_failed_imports=False)
