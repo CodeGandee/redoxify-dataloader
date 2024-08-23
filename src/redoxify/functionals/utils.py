@@ -121,13 +121,16 @@ if __name__ == "__main__":
         str_to_tensor = lambda x: torch.tensor(
             np.frombuffer(x.encode(), dtype=np.uint8)
         )
+        fake_value = types.Constant(
+            np.zeros((0,), dtype=np.int64), dtype=types.DALIDataType.INT64
+        )
         # msg = types.Constant(str_to_tensor("pring the shape of images"), device="gpu")
         msg = types.Constant(
             np.frombuffer("pring the shape of images".encode(), dtype=np.uint8),
             device="gpu",
         )
-        
-        print_data_info_gpu(fn.shapes(images), msg)
+
+        print_data_info_gpu(fake_value, msg)
         return images, converted
 
     pipe_cpu = hsv_pipeline(

@@ -37,7 +37,7 @@ from redoxify.transforms.pytorch.MedianBlur import (
 from redoxify.transforms.RandomSingleDirectionFlip import (
     RandomSingleDirectionFlipConfig, RandomSingleDirectionFlipInputOutputMap, ImageRandomSingleDirectionFlipSetting, BoxRandomSingleDirectionFlipSetting
 )
-from redoxify.transforms.RandomHSVAug import (
+from redoxify.transforms.pytorch.RandomHSVAug import (
     RandomHSVConfig, ImageRandomHSVSetting, RandomHSVInputOutputMap
 )
 from redoxify.pipelines.PipelineBuilder import SingleOutputSpec
@@ -259,6 +259,6 @@ redox_dataset_config = dict(
         bbox_key='bboxes',
         label_key='classes',
         mm_key_mapping={"images": "img", "classes": "gt_bboxes_labels", "bboxes": "gt_bboxes"},
-        mm_pipeline=mm_pipeline)
+        mm_pipeline=None)
         # mm_pipeline=None)
 )

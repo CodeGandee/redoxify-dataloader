@@ -27,7 +27,7 @@ from redoxify.transforms.Pad import (
 from redoxify.transforms.RandomSingleDirectionFlip import (
     RandomSingleDirectionFlip, RandomSingleDirectionFlipConfig, RandomSingleDirectionFlipInputOutputMap, ImageRandomSingleDirectionFlipSetting, BoxRandomSingleDirectionFlipSetting
 )
-from redoxify.transforms.RandomHSVAug import (
+from redoxify.transforms.pytorch.RandomHSVAug import (
     RandomHSVAug, RandomHSVConfig, ImageRandomHSVSetting, RandomHSVInputOutputMap
 )
 from redoxify.transforms.DataBlockGrouping import (
