@@ -1,35 +1,39 @@
 import torch
 from torch.nn import functional as F
 from kornia.geometry.transform import warp_perspective
-from typing import Tuple
+from typing import Tuple, Union, List
 from nvidia.dali.plugin.pytorch.fn import torch_python_function
 from nvidia.dali.pipeline import DataNode as DALINode
 
 
-def dali_random_affine(
+def dali_affine(
     image: DALINode,
     bboxes: DALINode,
     labels: DALINode,
-    max_rotate_degree: DALINode,
-    max_translate_ratio: DALINode,
-    scaling_ratio_range: DALINode,
-    max_shear_degree: DALINode,
+    rotate_degree: DALINode,
+    translate_ratio: DALINode,
+    scaling_ratio: DALINode,
+    shear_degree_xy: DALINode,
     border: DALINode,
     border_val: DALINode,
     min_bbox_size: DALINode,
+    min_area_ratio: DALINode,
+    max_aspect_ratio: DALINode,
 ):
     func = torch_python_function(
         image,
         bboxes,
         labels,
-        max_rotate_degree,
-        max_translate_ratio,
-        scaling_ratio_range,
-        max_shear_degree,
+        rotate_degree,
+        translate_ratio,
+        scaling_ratio,
+        shear_degree_xy,
         border,
         border_val,
         min_bbox_size,
-        function=_random_affine,
+        min_area_ratio,
+        max_aspect_ratio,
+        function=_torch_affine,
         batch_processing=False,
         num_outputs=3,
         device="gpu",
@@ -37,32 +41,34 @@ def dali_random_affine(
     return func
 
 
-def _random_affine(
+def _torch_affine(
     img: torch.Tensor,
     bboxes: torch.Tensor,
     labels: torch.Tensor,
-    max_rotate_degree: torch.Tensor,
-    max_translate_ratio: torch.Tensor,
-    scaling_ratio_range: torch.Tensor,
-    max_shear_degree: torch.Tensor,
+    rotate_degree: torch.Tensor,
+    translate_ratio_xy: torch.Tensor,
+    scaling_ratio: torch.Tensor,
+    shear_degree_xy: torch.Tensor,
     border: torch.Tensor,
     border_val: torch.Tensor,
     min_bbox_size: torch.Tensor,
+    min_area_ratio: torch.Tensor,
+    max_aspect_ratio: torch.Tensor,
 ):
+    device = img.device
     height = img.shape[0] + border[1] * 2
     width = img.shape[1] + border[0] * 2
-    centr_matrix = torch.eye(3, dtype=torch.float32)
+    centr_matrix = torch.eye(3, dtype=torch.float32, device=device)
     centr_matrix[0, 2] = -img.shape[1] / 2
     centr_matrix[1, 2] = -img.shape[0] / 2
-
-    warp_matrix, scaling_ratio = _get_random_homography_matrix(
+    warp_matrix, scaling_ratio = _get_homography_matrix(
         height,
         width,
-        max_rotate_degree,
-        max_translate_ratio,
-        scaling_ratio_range,
-        max_shear_degree,
-        device=img.device,
+        rotate_degree,
+        translate_ratio_xy,
+        scaling_ratio,
+        shear_degree_xy,
+        device=device,
     )
     warp_matrix = warp_matrix @ centr_matrix
 
@@ -91,8 +97,8 @@ def _random_affine(
         new_bboxes = corners2bbox(corners)
         new_bboxes[..., 0::2] = new_bboxes[..., 0::2].clamp(0, width)
         new_bboxes[..., 1::2] = new_bboxes[..., 1::2].clamp(0, height)
-        valid_index = (new_bboxes[:, 2] - new_bboxes[:, 0] > min_bbox_size) & (
-            new_bboxes[:, 3] - new_bboxes[:, 1] > min_bbox_size
+        valid_index = _filter_bboxes(
+            ori_bboxes, new_bboxes, min_bbox_size, min_area_ratio, max_aspect_ratio
         )
         bboxes = new_bboxes[valid_index]
         # convert absolute bbox to normalized bbox
@@ -100,6 +106,25 @@ def _random_affine(
         bboxes[:, 1::2] = bboxes[:, 1::2] / height
         labels = labels[valid_index]
     return new_img, bboxes, labels
+
+
+def _filter_bboxes(
+    original_bboxes: torch.Tensor,
+    warpped_bboxes: torch.Tensor,
+    min_bbox_size: torch.Tensor,
+    min_area_ratio: torch.Tensor,
+    max_aspect_ratio: torch.Tensor,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    ori_w = original_bboxes[:, 2] - original_bboxes[:, 0]
+    ori_h = original_bboxes[:, 3] - original_bboxes[:, 1]
+    warp_w = warpped_bboxes[:, 2] - warpped_bboxes[:, 0]
+    warp_h = warpped_bboxes[:, 3] - warpped_bboxes[:, 1]
+    wh_valid_index = (warp_w > min_bbox_size) & (warp_h > min_bbox_size)
+    area_valid_index = (warp_w * warp_h) / (ori_w * ori_h + 1e-8) > min_area_ratio
+    aspect_ratio_valid_index = (
+        torch.max(warp_w / (warp_h + 1e-8), warp_h / (warp_w + 1e-8)) < max_aspect_ratio
+    )
+    return wh_valid_index & area_valid_index & aspect_ratio_valid_index
 
 
 def corners2bbox(corners: torch.Tensor) -> torch.Tensor:
@@ -125,38 +150,23 @@ def bbox2corners(bboxes: torch.Tensor) -> torch.Tensor:
     return corners.reshape(*corners.shape[:-1], 4, 2)
 
 
-def _torch_uniform(left: float, right: float) -> torch.Tensor:
-    return torch.rand(1) * (right - left) + left
-
-
-def _get_random_homography_matrix(
+def _get_homography_matrix(
     height: int,
     width: int,
-    max_rotate_degree: float,
-    max_translate_ratio: float,
-    scaling_ratio_range: Tuple[float, float],
-    max_shear_degree: float,
+    rotation_degree: Union[float, torch.Tensor],
+    translate_ratio_xy: Union[List[float], Tuple[float], torch.Tensor],
+    scaling_ratio: Union[float, torch.Tensor],
+    shear_degree_xy: Union[List[float], Tuple[float], torch.Tensor],
     device: torch.device,
 ) -> Tuple[torch.Tensor, float]:
-    rotation_degree = _torch_uniform(-max_rotate_degree, max_rotate_degree)
     rotation_matrix = _get_rotation_matrix(rotation_degree)
-
-    # Scaling
-    scaling_ratio = _torch_uniform(scaling_ratio_range[0], scaling_ratio_range[1])
     scaling_matrix = _get_scaling_matrix(scaling_ratio)
-
-    # Shear
-    x_degree = _torch_uniform(-max_shear_degree, max_shear_degree)
-    y_degree = _torch_uniform(-max_shear_degree, max_shear_degree)
+    x_degree = shear_degree_xy[0]
+    y_degree = shear_degree_xy[1]
     shear_matrix = _get_shear_matrix(x_degree, y_degree)
-
     # Translation
-    trans_x = (
-        _torch_uniform(0.5 - max_translate_ratio, 0.5 + max_translate_ratio) * width
-    )
-    trans_y = (
-        _torch_uniform(0.5 - max_translate_ratio, 0.5 + max_translate_ratio) * height
-    )
+    trans_x = translate_ratio_xy[0] * width
+    trans_y = translate_ratio_xy[1] * height
     translate_matrix = _get_translation_matrix(trans_x, trans_y)
     warp_matrix = translate_matrix @ shear_matrix @ rotation_matrix @ scaling_matrix
     return warp_matrix.to(device=device), scaling_ratio.to(device=device)
@@ -211,61 +221,3 @@ def _get_translation_matrix(x: float, y: float) -> torch.Tensor:
         dtype=torch.float32,
     )
     return translation_matrix
-
-
-if __name__ == "__main__":
-    # Test the blur functions
-    import cv2
-    import numpy as np
-
-    border = 320
-    img = cv2.imread("tests/fuji.jpg")
-    img = cv2.resize(img, (1280, 1280))
-    img_tensor = torch.from_numpy(img)
-    bboxes = torch.tensor([[0.1, 0.4, 0.9, 0.9]])
-    labels = torch.tensor([1])
-    # draw bbox and label on image
-    box = bboxes[0].numpy()
-    img = cv2.rectangle(img, (int(box[0] * img.shape[1]), int(box[1] * img.shape[0])), (int(box[2] * img.shape[1]), int(box[3] * img.shape[0])), (0, 255, 0), 2)
-    img = cv2.putText(
-        img,
-        "1",
-        (int(box[0] * img.shape[1]), int(box[1] * img.shape[0])),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        1,
-        (0, 0, 255),
-        2,
-        cv2.LINE_AA,
-    )
-    cv2.imwrite("tests/fuji_bbox.jpg", img)
-    for i in range(10):
-        warp_img, warp_bboxes, warp_labels = _random_affine(
-            img_tensor,
-            bboxes,
-            labels,
-            max_rotate_degree=torch.tensor(0.0),
-            max_shear_degree=torch.tensor(0.0),
-            scaling_ratio_range=torch.tensor([0.5, 1.5]),
-            max_translate_ratio=torch.tensor(0.1),
-            border=torch.tensor([-border, -border]),
-            border_val=torch.tensor([114, 114, 114]),
-            min_bbox_size=torch.tensor(10),
-        )
-        warp_img = warp_img.numpy().copy()
-        warp_bboxes = warp_bboxes.numpy()
-        warp_labels = warp_labels.numpy()
-        box = warp_bboxes[0]
-        warp_img = cv2.rectangle(warp_img, (int(box[0] * warp_img.shape[1]), int(box[1] * warp_img.shape[0])), (int(box[2] * warp_img.shape[1]), int(box[3] * warp_img.shape[0])), (0, 255, 0), 2)
-        warp_img = cv2.putText(
-            warp_img,
-            "1",
-            (int(box[0] * warp_img.shape[1]), int(box[1] * warp_img.shape[0])),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1,
-            (0, 0, 255),
-            2,
-            cv2.LINE_AA,
-        )
-        print(warp_img.shape)
-        cv2.imwrite(f"temp/fuji_bbox_warp{i}.jpg", warp_img)
-        

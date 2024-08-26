@@ -38,7 +38,7 @@ def _clahe(
         Tensor: CLAHE applied image.
     """
     if torch.rand(1, device=probability.device) > probability:
-        return image
+        return img
     img = (
         img.permute(2, 0, 1).unsqueeze(0) / 255
     )  # Convert to shape (1, C, H, W) and normalize
@@ -47,9 +47,10 @@ def _clahe(
     clahe_img = equalize_clahe(
         img, clip_limit, grid_size, slow_and_differentiable=False
     )
-    return (
+    clahe_img = (
         clahe_img.squeeze(0).permute(1, 2, 0) * 255
-    )  # Convert back to shape (H, W, C) and denormalize
+    ).byte()  # Convert back to shape (H, W, C) and denormalize
+    return clahe_img 
 
 
 if __name__ == "__main__":

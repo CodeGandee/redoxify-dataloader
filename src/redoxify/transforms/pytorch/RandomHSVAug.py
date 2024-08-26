@@ -72,15 +72,6 @@ class RandomHSVAug(BaseTransform):
             assert img_setting.image_key.main_key in input_data, f"image key {img_setting.image_key} not found in data"
 
         output_data = copy.copy(input_data)
-        gains = (
-            fn.random.uniform(range=[-1, 1], shape=3)
-            * [
-                self.m_hsv_config.hue_delta,
-                self.m_hsv_config.saturation_delta,
-                self.m_hsv_config.value_delta,
-            ]
-            + 1
-        )
         for img_setting in self.m_inout_map.image_hsv_settings:
             image_key = img_setting.image_key
             output_key = img_setting.output_key
@@ -89,6 +80,15 @@ class RandomHSVAug(BaseTransform):
             for sub_key in image_datablock.get_keys():
                 out_image_spec = image_datablock.get_spec(sub_key).clone()
                 _image = image_datablock.get_decoded_tensor(sub_key)
+                gains = (
+                    fn.random.uniform(range=[-1, 1], shape=3, device=_image.device)
+                    * [
+                        self.m_hsv_config.hue_delta,
+                        self.m_hsv_config.saturation_delta,
+                        self.m_hsv_config.value_delta,
+                    ]
+                    + 1
+                )
                 _image = dali_hsv_image(_image, gains[0], gains[1], gains[2])
                 out_img_blk.add_data(sub_key, _image, out_image_spec)
             output_data[output_key.main_key] = out_img_blk

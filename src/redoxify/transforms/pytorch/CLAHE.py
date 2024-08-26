@@ -77,7 +77,7 @@ class Clahe(BaseTransform):
             for sub_key in image_datablock.get_keys():
                 out_image_spec = image_datablock.get_spec(sub_key).clone()
                 _image = image_datablock.get_decoded_tensor(sub_key)
-                _image = dali_clahe_image(_image, self.m_clahe_config.clahe_limit, self.m_clahe_config.tile_grid_size, self.m_clahe_config.probability)
+                _image = dali_clahe_image(_image, self.m_clahe_config.clip_limit, self.m_clahe_config.tile_grid_size, self.m_clahe_config.probability)
                 out_img_blk.add_data(sub_key, _image, out_image_spec)
             output_data[output_key.main_key] = out_img_blk
         return output_data, True

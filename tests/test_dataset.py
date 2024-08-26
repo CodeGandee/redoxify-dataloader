@@ -36,7 +36,7 @@ def test_RedoxBaseDataset(dataset_config):
             bboxes = data['data_samples'][j].gt_instances.bboxes.cpu().numpy()
             labels = data['data_samples'][j].gt_instances.labels.cpu().numpy()
             draw_bboxes(img, bboxes, labels)
-            cv2.imwrite(f'temp/test_dataset_{i}_{j}.jpg', img)
+            cv2.imwrite(f'temp/dali_affine/test_dataset_{i}_{j}.jpg', img)
         if i > 20:
             break
 
