@@ -1,4 +1,4 @@
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Tuple
 from attrs import define, field
 import attrs.validators as av
 import copy
@@ -35,7 +35,7 @@ class ClaheInputOutputMap:
 @define(kw_only=True, eq=False)
 class ClaheConfig:
     clip_limit : Union[int, DALINode] = field(default=7)
-    tile_grid_size : Union[List[int], DALINode] = field(default=[8, 8])
+    tile_grid_size : Union[List[int], Tuple[int, int], DALINode] = field(default=[8, 8])
     probability : Union[float, DALINode] = field(default=0.5)
     
 @define(kw_only=True, eq=False)
