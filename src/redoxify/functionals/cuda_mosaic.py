@@ -28,6 +28,7 @@ def dali_mosaic_images(
         function=_dali_mosaic_images,
         batch_processing=True,
         num_outputs=3,
+        output_layouts=["HWC"],
         device="gpu",
     )
     return func

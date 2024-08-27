@@ -15,6 +15,7 @@ def dali_clahe_image(
         function=_clahe,
         batch_processing=False,
         num_outputs=1,
+        output_layouts=["HWC"],
         device="gpu",
     )
     return func

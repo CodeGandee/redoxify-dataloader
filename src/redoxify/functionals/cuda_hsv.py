@@ -29,6 +29,7 @@ def dali_hsv_image(
         value_multiplier,
         function=_hsv_image,
         batch_processing=False,
+        output_layouts=["HWC"],
         num_outputs=1,
         device="gpu",
     )

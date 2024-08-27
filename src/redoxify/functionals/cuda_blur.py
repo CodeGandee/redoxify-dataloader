@@ -69,6 +69,7 @@ def dali_median_blur_image(
         probability,
         function=_median_blur_image,
         batch_processing=False,
+        output_layouts=["HWC"],
         num_outputs=1,
         device="gpu",
     )

@@ -35,6 +35,7 @@ def dali_affine(
         max_aspect_ratio,
         function=_torch_affine,
         batch_processing=False,
+        output_layouts=['HWC'],
         num_outputs=3,
         device="gpu",
     )

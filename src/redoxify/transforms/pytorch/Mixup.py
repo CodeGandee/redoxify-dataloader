@@ -7,7 +7,7 @@ import nvidia.dali.fn as fn
 from nvidia.dali.types import DALIDataType
 
 from redoxify.datablocks.DataBlock import DataBlock, DALINode
-from redoxify.functionals.cuda_ops import dali_mixup_images
+from redoxify.functionals.cuda_mixup import dali_mixup_images
 from redoxify.RedoxTypes import DataKey
 
 from redoxify.datablocks.ImagesBlock import (
