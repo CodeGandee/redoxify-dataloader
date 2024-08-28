@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 
 sys.path.append('/workspace/redoxify-dataloader/')
 sys.path.append('/workspace/redoxify-dataloader/src')
-from examples.mmtrain.redox_config import redox_dataset_config
+from examples.mmtrain.redox_config_yolov8l import redox_dataset_config
 from redoxify.datasets.RedoxBaseDataset import RedoxBaseDataset
 from redoxify.plugin.mmdetection.datasets.RedoxMMDetDataset import RedoxMMDetDataset
 from redoxify.plugin.mmdetection.datasets.utils import pseudo_collate, yolov5_collate

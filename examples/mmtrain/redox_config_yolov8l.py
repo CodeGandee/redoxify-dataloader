@@ -253,7 +253,7 @@ mixup_map = MixupInputOutputMap(
     label_mixup_settings=[label_mixup_setting],
 )
 mixup_cfg = MixupConfig(
-    mixup_lower_ratio=0.25, mixup_upper_ratio=0.75, fill_values=128.0
+    mixup_lower_ratio=0.25, mixup_upper_ratio=0.75, fill_values=128.0, probability=0.8
 )
 
 # random flip config, flip the image and boxes horizontally(you can choose horizontal or vertical) with a probability of 0.5
@@ -336,7 +336,7 @@ redox_dataset_config = dict(
         dict(type="Mosaic", config=mosaic_cfg, inout_map=mosaic_map),
         dict(type="Resize", config=resize_cfg2, inout_map=resize_map),
         dict(type="RandomAffine", config=affine_cfg, inout_map=affine_map),
-        # dict(type="Resize", config=resize_cfg, inout_map=resize_map),
+        dict(type="Mixup", config=mixup_cfg, inout_map=mixup_map),
         dict(type="RandomSingleDirectionFlip", config=flip_cfg, inout_map=flip_map),
         dict(type="RandomHSVAug", config=hsv_cfg, inout_map=hsv_map),
         dict(type="Blur", config=blur_cfg, inout_map=blur_map),

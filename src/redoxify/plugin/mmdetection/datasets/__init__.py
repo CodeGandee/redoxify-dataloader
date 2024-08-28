@@ -1,2 +1,3 @@
 from redoxify.plugin.mmdetection.datasets.RedoxMMDetDataset import RedoxMMDetDataset
 from redoxify.plugin.mmdetection.datasets.utils import pseudo_collate, yolov5_collate
+from redoxify.plugin.mmdetection.datasets.person_dataset import YOLOv5PersonDataset

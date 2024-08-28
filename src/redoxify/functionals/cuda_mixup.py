@@ -34,6 +34,7 @@ def _dali_mixup_images(images: List[torch.Tensor], boxes: List[torch.Tensor], la
         ratio = ratioes[idx]
         selected_indices = random.sample(indices, 2)
         mxiup_image = images[selected_indices[0]] * ratio + images[selected_indices[1]] * (1 - ratio)
+        mxiup_image = mxiup_image.clamp(0, 255).byte()
         mxiup_images.append(mxiup_image)
         mixup_boxes.append(torch.cat([boxes[i] for i in selected_indices], dim=0))
         mixup_labels.append(torch.cat([labels[i] for i in selected_indices], dim=0))

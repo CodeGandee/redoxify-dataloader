@@ -15,7 +15,7 @@ from mmdet.utils import setup_cache_size_limit_of_dynamo
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
-    parser.add_argument('--config', help='train config file path', default='examples/mmtrain/configs/yolov8_s.py')
+    parser.add_argument('--config', help='train config file path', default='examples/mmtrain/configs/yolov8_l.py')
     # parser.add_argument('--config', help='train config file path', default='mmtrain/ddq_detr.py')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
