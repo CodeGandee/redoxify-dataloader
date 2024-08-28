@@ -8,8 +8,8 @@ custom_imports = dict(
     ],
     allow_failed_imports=False,
 )
-# from examples.mmtrain.redox_config_yolov8l import redox_dataset_config as redox_dataset_config
-# runner_type='redoxify.plugin.mmdetection.runner.RedoxMMYoloRunner'
+from examples.mmtrain.redox_config_yolov8l import redox_dataset_config as redox_dataset_config
+runner_type='redoxify.plugin.mmdetection.runner.RedoxMMYoloRunner'
 
 default_scope = 'mmyolo'
 
@@ -45,7 +45,7 @@ val_data_prefix = 'images/'  # Prefix of val image path
 
 num_classes = 80  # Number of classes for classification
 # Batch size of a single GPU during training
-train_batch_size_per_gpu = 16
+train_batch_size_per_gpu = 8
 # Worker to pre-fetch data for each single GPU during training
 train_num_workers = 8
 # persistent_workers must be False if num_workers is 0
@@ -73,7 +73,7 @@ img_scale = (640, 640)  # width, height
 # Dataset type, this will be used to define the dataset
 dataset_type = "YOLOv5PersonDataset"
 # Batch size of a single GPU during validation
-val_batch_size_per_gpu = 16
+val_batch_size_per_gpu = 8
 # Worker to pre-fetch data for each single GPU during validation
 val_num_workers = 8
 
