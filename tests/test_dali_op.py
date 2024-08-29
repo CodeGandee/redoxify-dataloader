@@ -48,23 +48,33 @@ def hsv_pipeline(device, hue, saturation, value):
         jpeg_data, device="cpu" if device == "cpu" else "mixed"
     )
     gains = fn.random.uniform(range=[-1, 1], shape=3) * [hue, saturation, value] + 1
-    converted = fn.hsv(images, hue=gains[0], saturation=gains[1], value=gains[2])
+    converted = fn.hsv(images, hue=0.0, saturation=gains[1], value=gains[2])
     return images, converted, gains
 
-# pipe_cpu = hsv_pipeline(
-#     device="gpu",
-#     hue=0.15,
-#     saturation=0.0,
-#     value=0.,
-#     batch_size=batch_size,
-#     num_threads=1,
-#     device_id=0,
-# )
-# pipe_cpu.build()
-# dali_iter = DALIGenericIterator(pipe_cpu, ["img1", "hsv", 'gains'])
+pipe_cpu = hsv_pipeline(
+    device="gpu",
+    hue=0.0,
+    saturation=0.4,
+    value=-0.2,
+    batch_size=batch_size,
+    num_threads=1,
+    device_id=0,
+)
+pipe_cpu.build()
+dali_iter = DALIGenericIterator(pipe_cpu, ["img1", "hsv", 'gains'])
 
-hsv_mm = mm_hsv(img, 1.015, 1.4, 0.8)
+for i, data in enumerate(dali_iter):
+    dali_img = data[0]["img1"]
+    gains = data[0]["gains"]
+    hsv = data[0]["hsv"]
+    hsv_np = hsv[0].cpu().numpy()
+    hsv_np = hsv_np.copy()
+    hsv_img = cv2.cvtColor(hsv_np, cv2.COLOR_RGB2BGR)
+    cv2.imwrite(f"temp/hsv_dali_{i}.jpg", hsv_img)
+    break
+
+hsv_mm = mm_hsv(img, 1.0, 1.4, 0.8)
 cv2.imwrite(f'temp/hsv_mm_{0}.jpg', hsv_mm)
-hsv_kor = kornia_hsv(torch.from_numpy(img_rgb).to(device="cuda"), torch.tensor(1.015), torch.tensor(1.4), torch.tensor(0.8))
+hsv_kor = kornia_hsv(torch.from_numpy(img_rgb).to(device="cuda"), torch.tensor(1.0), torch.tensor(1.4), torch.tensor(0.8))
 hsv_kor = cv2.cvtColor(hsv_kor.cpu().numpy(), cv2.COLOR_RGB2BGR)
-cv2.imwrite(f'temp/hsv_kor_{0}.jpg', cv2.cvtColor(hsv_kor.cpu().numpy(), cv2.COLOR_RGB2BGR))
+cv2.imwrite(f'temp/hsv_kor_{0}.jpg', hsv_kor)

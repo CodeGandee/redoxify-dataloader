@@ -53,9 +53,12 @@ def _clahe(
     else:
         clip_limit = random.uniform(1.0, clip_limit.item())
     tile_grid_size = tuple(tile_grid_size.int().tolist())
+    # kornia.color.rgb_to_lab() returns L in [0, 100] and ab in [-127, 128]
+    # but kornia.enhance.equalize() expects input in [0, 1]
     img_lab = rgb_to_lab(img)
     img_lab[:, 0, ...] = equalize_clahe(
-        img_lab[:, 0, ...]/100.0, clip_limit, tile_grid_size, slow_and_differentiable=False
+        img_lab[:, 0, ...]/100.0, clip_limit, tile_grid_size, 
+        slow_and_differentiable=False
     )*100.0
     img_rgb = lab_to_rgb(img_lab)
     clahe_img = (

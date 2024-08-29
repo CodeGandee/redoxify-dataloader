@@ -24,7 +24,7 @@ img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 img_rgb_tensor = torch.from_numpy(img_rgb)
 img_tensor = torch.from_numpy(img)
 
-fix_clip_limit = 8.0
+fix_clip_limit = 4.0
 
 a_pipe = A.Compose(
     [
