@@ -141,6 +141,7 @@ record/
 weights/
 work_dirs/
 temp/
+temp*/
 test/
 *.jpg
 *.png
