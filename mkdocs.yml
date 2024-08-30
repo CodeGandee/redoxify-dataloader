@@ -1,0 +1,16 @@
+site_name: Redoxify Dataloader
+
+nav:
+- Introduction: index.md
+- Transforms: transforms.md
+
+theme: readthedocs
+
+plugins:
+- search
+- autorefs
+- glightbox
+
+markdown_extensions:
+- attr_list
+- md_in_html

@@ -25,15 +25,15 @@ def _blur_image(
     image: torch.Tensor, blur_limit: torch.Tensor, probability: torch.Tensor
 ) -> torch.Tensor:
     """
-    Apply a blur filter to an image using PyTorch. The blur kernel size is randomly
-    chosen between 3 and `blur_limit`.
+    Apply blurring effect to an image with a given probability.
 
     Args:
-    - image (torch.Tensor): Input image of shape (H, W, 3).
-    - blur_limit (torch.Tensor): Maximum blur kernel size.
+        image (torch.Tensor): The input image tensor.
+        blur_limit (torch.Tensor): The maximum limit for blurring.
+        probability (torch.Tensor): The probability of applying blurring.
 
     Returns:
-    - torch.Tensor: Blurred image.
+        torch.Tensor: The blurred image tensor.
     """
     if torch.rand(1, device=probability.device) > probability:
         return image
