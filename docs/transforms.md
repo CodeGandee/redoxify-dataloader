@@ -145,3 +145,35 @@ The `Mosaic` transform combines four images into a single mosaic image, arranged
 ```python
 clahe_cfg = ClaheConfig(clip_limit=4, tile_grid_size=(8, 8), probability=0.01)
 ```
+
+
+
+## RandomCropWithBoxes
+
+**Description:**
+The `RandomCropWithBoxes` transform crops a random region from the input image while ensuring that the crop contains valid bounding boxes. This transform is particularly useful in object detection tasks, where preserving object annotations within the cropped region is crucial.
+
+**Parameters:**  
+
+- `aspect_ratio_wh_min` (float) : The minimum aspect ratio (width/height) for the crop region. This value is used to randomize the aspect ratio within the specified range.
+- `aspect_ratio_wh_max` (float) : The maximum aspect ratio (width/height) for the crop region. This value is used alongside aspect_ratio_wh_min to determine the aspect ratio range for the crop.
+- `box_length_min` (float) : The minimum length of the crop region relative to the image size, specified as a normalized value in the range (0, 1]. This parameter ensures that the crop region is not too small.
+- `box_length_max` (str, optional) : The type of metric used to determine whether a bounding box should be retained after cropping. This parameter is used to decide which boxes are kept after cropping. The options are:
+> - `'overlap'`: The ratio of the area of the box that overlaps with the crop window to the area of the box.  
+> - `'iou'`: The Intersection over Union (IoU) between the box and the crop window.  
+- `crop_metric_type` (float) : The maximum length of the crop region relative to the image size, specified as a normalized value in the range (0, 1]. This parameter ensures that the crop region does not exceed a certain size.
+
+
+**Example Usage:**
+```python
+crop_config = CropConfig(
+    aspect_ratio_wh_min=0.5,
+    aspect_ratio_wh_max=2.0,
+    box_length_min=0.3,
+    box_length_max=1.0,
+    crop_metric_type='iou',
+    crop_metric_min=[0.3, 0.5]
+)
+```
+
+
