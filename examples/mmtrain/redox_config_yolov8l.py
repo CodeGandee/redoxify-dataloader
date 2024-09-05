@@ -323,7 +323,7 @@ output_map = dict(
 
 redox_dataset_config = dict(
     pipeline_cfg=dict(
-        batch_size=8,
+        batch_size=16,
         num_workers=8,
     ),
     reader=dict(

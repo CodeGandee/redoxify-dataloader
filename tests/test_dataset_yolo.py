@@ -24,19 +24,19 @@ def draw_bboxes(img, bboxes, labels):
 
 def test_RedoxBaseDataset(dataset_config):
     dataset = RedoxMMDetDataset.from_redox_cfg(dataset_config, num_gpus=1, device_id=0)
-    dataloader = DataLoader(dataset, collate_fn=pseudo_collate)
+    dataloader = DataLoader(dataset, collate_fn=yolov5_collate)
     start_time = time.time()
     pbar = tqdm(total=len(dataloader))
     for i, data in enumerate(dataloader):
         pbar.update()
-        for j in range(len(data['inputs'])):
-            img = data['inputs'][j].permute(1, 2, 0).cpu().numpy().copy()
-            # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-            bboxes = data['data_samples'][j].gt_instances.bboxes.cpu().numpy()
-            labels = data['data_samples'][j].gt_instances.labels.cpu().numpy()
-            draw_bboxes(img, bboxes, labels)
-            cv2.imwrite(f'temp/test_dataset_{i}_{j}.jpg', img)
-        if i > 20:
+    #     for j in range(len(data['inputs'])):
+    #         img = data['inputs'][j].permute(1, 2, 0).cpu().numpy().copy()
+    #         # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    #         bboxes = data['data_samples'][j].gt_instances.bboxes.cpu().numpy()
+    #         labels = data['data_samples'][j].gt_instances.labels.cpu().numpy()
+    #         draw_bboxes(img, bboxes, labels)
+    #         cv2.imwrite(f'temp/test_dataset_{i}_{j}.jpg', img)
+        if i > 100:
             break
 
 if __name__ == '__main__':
