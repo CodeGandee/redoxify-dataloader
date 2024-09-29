@@ -23,7 +23,7 @@ Redoxify leverages the NVIDIA DALI (Data Loading Library) framework to create a 
  - **Integration with PyTorch**: Easy integration with PyTorch for seamless data processing and training.
  - **User-Friendly**: No need to write complex DALI code; simply provide a configuration file.
 
-_For details, please refer to the [Documentation]_
+_For details, please refer to the [Documentation](https://codegandee.github.io/redoxify-dataloader/)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
