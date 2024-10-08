@@ -100,11 +100,11 @@ datablock_spec = {
 # index_files = ["/workspace/redoxify_example/record/example.idx"]
 record_files = sorted(
     glob.glob(
-        "/workspace/archive/github/redoxify-dataloader/record/coco_train/*record*"
+        "/mnt/tfdata/coco_train/*record*"
     )
 )
 index_files = sorted(
-    glob.glob("/workspace/archive/github/redoxify-dataloader/record/coco_train/*index*")
+    glob.glob("/mnt/tfdata/coco_train/*index*")
 )
 tf_files = [
     TFRecordFile(record_file=rec_file, index_file=idx_file)

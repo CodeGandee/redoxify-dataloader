@@ -7,10 +7,9 @@ from torch.utils.data import DataLoader
 
 sys.path.append('/workspace/redoxify-dataloader/')
 sys.path.append('/workspace/redoxify-dataloader/src')
-from examples.mmtrain.redox_config_yolov8l import redox_dataset_config
+from examples.mmtrain.redox_config import redox_dataset_config
 from redoxify.datasets.RedoxBaseDataset import RedoxBaseDataset
-from redoxify.plugin.mmdetection.datasets.RedoxMMDetDataset import RedoxMMDetDataset
-from redoxify.plugin.mmdetection.datasets.utils import pseudo_collate, yolov5_collate
+from redoxify.datasets.utils import pseudo_collate
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
@@ -23,20 +22,13 @@ def draw_bboxes(img, bboxes, labels):
     return img
 
 def test_RedoxBaseDataset(dataset_config):
-    dataset = RedoxMMDetDataset.from_redox_cfg(dataset_config, num_gpus=1, device_id=0)
+    dataset = RedoxBaseDataset.from_redox_cfg(dataset_config, num_gpus=1, device_id=0)
     dataloader = DataLoader(dataset, collate_fn=pseudo_collate)
     start_time = time.time()
     pbar = tqdm(total=len(dataloader))
     for i, data in enumerate(dataloader):
         pbar.update()
-        for j in range(len(data['inputs'])):
-            img = data['inputs'][j].permute(1, 2, 0).cpu().numpy().copy()
-            print(img.shape)
-            # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-            bboxes = data['data_samples'][j].gt_instances.bboxes.cpu().numpy()
-            labels = data['data_samples'][j].gt_instances.labels.cpu().numpy()
-            draw_bboxes(img, bboxes, labels)
-            cv2.imwrite(f'temp/dali_affine/test_dataset_{i}_{j}.jpg', img)
+        print(data)
         if i > 20:
             break
 
